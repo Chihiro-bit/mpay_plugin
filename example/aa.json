@@ -1,0 +1,15 @@
+{
+  "data": {
+    "action": "https://mapi.alipaydev.com/gateway.do",
+    "out_trans_id": "20230713155601",
+    "pay_cheuel-type": "a11pay",
+    "pay_info": "_input_charset＝\"utf-8\"&body＝\"正掃付款+%\"&currency=\"HKD\"&forex_biz=\"FP\"&it_b_pay=\"5m\\'&notify_url=\"https://uatopenapi.macaupay.com.mo/ucop/v2/api/alipayNotify.do\"&out_trade_no=\"202=+%\"www.macaupass.com\"&return_url=\\https://uatopenapi.macaupay.com.mo/ucop/v2/api/alipayReturn.do\"&secondary_merchant_id=\"888534816774062\\&secondar\"&seller_id=\"2088621971500654\\&service=\\mobile.securitypay.pay\"&sign=\"M0kx06ocqqkJnxMFWg809dBtg7nx6h7vVqwD5ncirm1Jqe3bX%2FXN6Hwt5J%2B8um7TsQKVG3DMrJHRNHJN08U%2FtqcD1s6BFvYTATHr8yr%2FA6WMqhtjRKTYj%2Bh1%2FWoSiW3%2BBsJk8UKwdgxpQ45vNOCGGuo02AzuVibTBxI2LUaLYIK7jKdhbwAve6N2v1C%2FIC8bmHt%2BXHn9zmZsY1QB",
+    "result_code": "0000",
+    "result_msg": "成功",
+    "trade_no": "0000",
+    "trans_id": "2023071316014810000001"
+  },
+    "is_success": "T",
+    "sign_type":"RSA2",
+    "sign": "W6MwEy28hD7esrGcMC28Xf45Y2A9vKFwNZbsL52vJsP2SffBZIxyfJYDzrnd11zULCmLKQccF7Y3jyz20oq90u31mfqL06298eX1Vvgdpa4goNBZ6R03n06sZaoX11f4YKy/qLOC4Z5I2kZ09YA80uZuk31gEs69zz21kRmmK9uruSbpEZVbsbrSRQERxYctu54Nnn4z38gUVI8bY6uoStHNP2Q="
+  }
