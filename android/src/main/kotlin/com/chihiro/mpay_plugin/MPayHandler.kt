@@ -1,6 +1,8 @@
 package com.chihiro.mpay_plugin
 
 import android.app.Activity
+import android.text.TextUtils
+import android.widget.Toast
 import com.macau.pay.sdk.OpenSdk
 import com.macau.pay.sdk.base.PayResult
 import com.macau.pay.sdk.interfaces.OpenSdkInterfaces
@@ -33,6 +35,7 @@ class MPayHandler(private val result: Result, activity: Activity) : OpenSdkInter
         }
     }
 
+
     override fun OpenSDKInterfaces(payResult: PayResult?) {
         /// 接收OpenSDK支付結果
         Logger.i("OpenSDK支付結果 ----${payResult}")
@@ -40,9 +43,9 @@ class MPayHandler(private val result: Result, activity: Activity) : OpenSdkInter
         successMap["resultStatus"] = payResult?.resultStatus
         successMap["result"] = payResult?.result
         successMap["memo"] = payResult?.memo
+        successMap["type"] = "openSDK"
 
         result.success(successMap)
-
     }
 
     override fun AliPayInterfaces(payResult: PayResult?) {
@@ -52,6 +55,7 @@ class MPayHandler(private val result: Result, activity: Activity) : OpenSdkInter
         successMap["resultStatus"] = payResult?.resultStatus
         successMap["result"] = payResult?.result
         successMap["memo"] = payResult?.memo
+        successMap["type"] = "aliPay"
 
         result.success(successMap)
     }
@@ -59,10 +63,24 @@ class MPayHandler(private val result: Result, activity: Activity) : OpenSdkInter
     override fun MPayInterfaces(payResult: PayResult?) {
         /// 接收Mpay支付結果
         Logger.i("Mpay支付結果 ----$payResult")
+        var resultData: String = ""
+        if (!TextUtils.isEmpty(payResult?.resultStatus)) {
+            if (payResult?.resultStatus.equals("9000")) {
+                resultData = "支付成功,code:9000"
+            } else if (payResult?.resultStatus.equals("5000")) {
+                resultData =
+                    "支付结果未知,导致该问题是因为进程间通信出现了bug导致,可能是用户取消了支付,或者支付成功了,需要第三方对该订单进行结果查询,code:5000"
+            } else if (payResult?.resultStatus.equals("6001")) {
+                resultData = "支付取消,code:6001"
+            }
+        } else {
+            resultData = "支付结果为空"
+        }
         val successMap = mutableMapOf<String, Any?>()
         successMap["resultStatus"] = payResult?.resultStatus
-        successMap["result"] = payResult?.result
+        successMap["result"] = resultData
         successMap["memo"] = payResult?.memo
+        successMap["type"] = "mPay"
 
         result.success(successMap)
     }
@@ -74,6 +92,7 @@ class MPayHandler(private val result: Result, activity: Activity) : OpenSdkInter
         successMap["resultStatus"] = payResult?.resultStatus
         successMap["result"] = payResult?.result
         successMap["memo"] = payResult?.memo
+        successMap["type"] = "weChatPay"
 
         result.success(successMap)
     }
