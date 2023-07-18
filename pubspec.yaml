@@ -11,6 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
+  mpay_plugin_ios:
+    git: https://github.com/InTheClodus/mpay_plugin_ios.git
 
 dev_dependencies:
   flutter_test:
