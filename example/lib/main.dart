@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:mpay_plugin/mpay_plugin.dart';
+import 'package:logger/logger.dart';
+import 'package:mpay_plugin/mpay_plugin_platform_interface.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,19 +26,41 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    _mPayPlugin.init(
+      envEnum: AliPayEnv.SANDBOX,
+      envType: EnvType.UAT,
+    );
     dio = Dio();
     dio.options.baseUrl = "http://k3qdjv.natappfree.cc/";
-    dio.options.connectTimeout = const Duration(seconds: 5);
-    dio.options.receiveTimeout = const Duration(seconds: 5);
+    dio.options.connectTimeout = const Duration(seconds: 15);
+    dio.options.receiveTimeout = const Duration(seconds: 15);
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (RequestOptions options, RequestInterceptorHandler handler) {
+          Logger().i(options.data);
+          Logger().i(options.path);
+          return handler.next(options);
+        },
+        onResponse: (Response response, ResponseInterceptorHandler handler) {
+          Logger().i(response.data);
+          return handler.next(response);
+        },
+        onError: (DioException e, ErrorInterceptorHandler handler) {
+          Logger().i(e);
+          return handler.next(e);
+        },
+      ),
+    );
   }
 
-  Future<void> pay() async {
+  Future<void> pay(String type) async {
+    EasyLoading.show(status: "loading...",maskType: EasyLoadingMaskType.black);
     Map<String, dynamic> innerMsg = {
       "sub_merchant_name": "九紅家電",
       "sub_merchant_id": "888535722315285",
       "sub_merchant_industry": "5722",
     };
-    var response = await dio.post("/test/onlineAppCreate", data: {
+    Map<String, dynamic> params = {
       "org_id": "00000000004414",
       "sign_type": "MD5",
       "pay_channel": "mpay",
@@ -44,16 +71,33 @@ class _MyAppState extends State<MyApp> {
       "sub_merchant_name": "九紅家電",
       "sub_merchant_id": "888535722315285",
       "sub_merchant_industry": "5722",
-      "extend_params": "WECHAT",
-    });
-    print(response);
-    // Map<String, dynamic> map = jsonDecode(value.data.toString());
-    // _mPayPlugin.mPay(map["data"]["pay_info"]);
+      "extend_params": jsonEncode(innerMsg),
+    };
+    Map<String, dynamic> datas = {
+      "payChannel": type,
+      "totalFee": "5",
+      "currency": "MOP",
+      "subject": "测试订单",
+      "body": "测试app验签支付"
+    };
+    var response =
+        await dio.post("test/merchantSign", data: FormData.fromMap(datas));
+
+    String jsonString = json.encode(response.data["data"]["signData"]);
+    Logger().i(jsonString);
+    var result = await _mPayPlugin.mPay(jsonString);
+    if(result.resultStatus=="9000"){
+      EasyLoading.showSuccess("支付成功");
+    }else{
+      EasyLoading.showError(result.result??"");
+    }
+    EasyLoading.dismiss();
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Plugin example app'),
@@ -69,23 +113,32 @@ class _MyAppState extends State<MyApp> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: () => _mPayPlugin.mPay(
-                      """_input_charset＝"utf-8"&body＝"正掃付款+%"&currency="HKD"&forex_biz="FP"&it_b_pay="5m\'&notify_url="https://uatopenapi.macaupay.com.mo/ucop/v2/api/alipayNotify.do"&out_trade_no="202=+%"www.macaupass.com"&return_url=\https://uatopenapi.macaupay.com.mo/ucop/v2/api/alipayReturn.do"&secondary_merchant_id="888534816774062\&secondar"&seller_id="2088621971500654\&service=\mobile.securitypay.pay"&sign="M0kx06ocqqkJnxMFWg809dBtg7nx6h7vVqwD5ncirm1Jqe3bX%2FXN6Hwt5J%2B8um7TsQKVG3DMrJHRNHJN08U%2FtqcD1s6BFvYTATHr8yr%2FA6WMqhtjRKTYj%2Bh1%2FWoSiW3%2BBsJk8UKwdgxpQ45vNOCGGuo02AzuVibTBxI2LUaLYIK7jKdhbwAve6N2v1C%2FIC8bmHt%2BXHn9zmZsY1QB""").then(
-                    (value) {
-                      print("value: $value");
-                    },
-                  ),
-                  // onPressed: () => pay(),
+                  onPressed: () => pay("mpay"),
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(Colors.indigo),
                   ),
-                  child: const Text("Pay"),
+                  child: const Text("MPay"),
+                ),
+                ElevatedButton(
+                  onPressed: () => pay("alipay"),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(Colors.indigo),
+                  ),
+                  child: const Text("AliPay"),
+                ),
+                ElevatedButton(
+                  onPressed: () => pay("wechat"),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(Colors.indigo),
+                  ),
+                  child: const Text("WeChatPay"),
                 ),
               ],
             ),
           ),
         ),
       ),
+      builder: EasyLoading.init(),
     );
   }
 }
