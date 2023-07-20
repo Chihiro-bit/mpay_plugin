@@ -16,6 +16,13 @@ extension EnvTypeExtension on EnvType {
   int get value => [0, 1, 2][index];
 }
 
+/// 支付渠道，MPay，AliPay，WeChatPay
+enum PayChannel { mPay, aliPay, wechatPay }
+
+extension PayChannelExtension on PayChannel {
+  int get value => [0, 1, 2][index];
+}
+
 abstract class MpayPluginPlatform extends PlatformInterface {
   MpayPluginPlatform() : super(token: _token);
 
@@ -34,7 +41,7 @@ abstract class MpayPluginPlatform extends PlatformInterface {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
 
-  Future<Map> mPay(String? data) {
+  Future<Map> mPay(String? data, [PayChannel channel = PayChannel.mPay]) {
     throw UnimplementedError('mPay() has not been implemented.');
   }
 

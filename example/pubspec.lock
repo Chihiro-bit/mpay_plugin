@@ -185,15 +185,6 @@ packages:
       relative: true
     source: path
     version: "0.0.1"
-  mpay_plugin_ios:
-    dependency: transitive
-    description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "8b5b9feab56048415a46650faac8df095d673230"
-      url: "https://github.com/InTheClodus/mpay_plugin_ios.git"
-    source: git
-    version: "0.0.1"
   path:
     dependency: transitive
     description:

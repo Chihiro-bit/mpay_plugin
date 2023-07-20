@@ -55,24 +55,6 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> pay(String type) async {
     EasyLoading.show(status: "loading...",maskType: EasyLoadingMaskType.black);
-    Map<String, dynamic> innerMsg = {
-      "sub_merchant_name": "九紅家電",
-      "sub_merchant_id": "888535722315285",
-      "sub_merchant_industry": "5722",
-    };
-    Map<String, dynamic> params = {
-      "org_id": "00000000004414",
-      "sign_type": "MD5",
-      "pay_channel": "mpay",
-      "total_fee": "0.1",
-      "body": "我的商品1",
-      "sub_appid": "0000000000441402",
-      "subject": "商品",
-      "sub_merchant_name": "九紅家電",
-      "sub_merchant_id": "888535722315285",
-      "sub_merchant_industry": "5722",
-      "extend_params": jsonEncode(innerMsg),
-    };
     Map<String, dynamic> datas = {
       "payChannel": type,
       "totalFee": "5",
@@ -85,13 +67,25 @@ class _MyAppState extends State<MyApp> {
 
     String jsonString = json.encode(response.data["data"]["signData"]);
     Logger().i(jsonString);
-    var result = await _mPayPlugin.mPay(jsonString);
-    if(result.resultStatus=="9000"){
-      EasyLoading.showSuccess("支付成功");
-    }else{
-      EasyLoading.showError(result.result??"");
+    try{
+      PayChannel payChannel = PayChannel.aliPay;
+      if(type=="mpay"){
+        payChannel = PayChannel.mPay;
+      }else if(type =="alipay"){
+        payChannel = PayChannel.aliPay;
+      }else{
+        payChannel =PayChannel.wechatPay;
+      }
+      var result = await _mPayPlugin.mPay(jsonString,payChannel);
+      if(result.resultStatus=="9000"){
+        EasyLoading.showSuccess("支付成功");
+      }else{
+        EasyLoading.showError(result.result??"");
+      }
+      EasyLoading.dismiss();
+    }catch(e){
+      EasyLoading.dismiss();
     }
-    EasyLoading.dismiss();
   }
 
   @override

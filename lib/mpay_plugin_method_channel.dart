@@ -16,10 +16,12 @@ class MethodChannelMpayPlugin extends MpayPluginPlatform {
   }
 
   @override
-  Future<Map> mPay(String? data) async {
-    var response = await methodChannel.invokeMethod<dynamic>('mPay', data);
+  Future<Map> mPay(String? data, [PayChannel channel = PayChannel.mPay]) async {
+    var response = await methodChannel
+        .invokeMethod<dynamic>('mPay', {"data": data, "channel": channel.value});
     return response;
   }
+
   @override
   Future<void> init(
       {AliPayEnv envEnum = AliPayEnv.ONLINE,
