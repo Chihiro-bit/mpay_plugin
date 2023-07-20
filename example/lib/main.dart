@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _mPayPlugin.init(
-      envEnum: AliPayEnv.SANDBOX,
+      envEnum: AliPayEnv.ONLINE,
       envType: EnvType.UAT,
     );
     dio = Dio();
@@ -82,6 +82,7 @@ class _MyAppState extends State<MyApp> {
       }else{
         EasyLoading.showError(result.result??"");
       }
+      Logger().i(result.toString());
       EasyLoading.dismiss();
     }catch(e){
       EasyLoading.dismiss();

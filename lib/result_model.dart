@@ -28,4 +28,8 @@ class ResultModel {
       'type': type,
     };
   }
+  @override
+  String toString() {
+    return "resultStatus:$resultStatus\nresult$result\nmemo$memo\ntype$type";
+  }
 }
