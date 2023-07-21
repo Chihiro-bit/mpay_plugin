@@ -42,7 +42,6 @@ MPayHandler *payHandler;
     } else if ([mpyEnvString isEqualToString:@"1"]) {
         [[OpenSDK sharedInstance] setEnvironmentType:MPay_SIT];
     } else if ([mpyEnvString isEqualToString:@"2"]) {
-        NSLog(@"Map UAT 初始化");
         [[OpenSDK sharedInstance] setEnvironmentType:MPay_UAT];
     }
 }

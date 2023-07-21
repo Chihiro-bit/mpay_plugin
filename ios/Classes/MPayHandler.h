@@ -8,6 +8,7 @@
 
 @interface MPayHandler : NSObject <OpenSDKDelegate>
 @property (nonatomic, copy) FlutterResult result;
+@property NSMutableString *payChannel;
 /**
  @param data 支付信息
  @param channel 支付渠道（ 0->mPay  ,  1-> alipay  ,  2->wechatPay ）

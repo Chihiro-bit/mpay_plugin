@@ -13,6 +13,7 @@
 
 @implementation MPayHandler
 
+//NSMutableString *payChannel = [NSMutableString stringWithString:@"MPay"];
 - (void)pay:(NSString *)data param2:(NSNumber *)channel param3:(FlutterResult)result{
     self.result = result; // 将参数result赋值给实例变量self.result
     NSString *channelString = [channel stringValue];
@@ -27,14 +28,17 @@
 
 - (void) mPay:(NSString *)data{
     [[OpenSDK sharedInstance]MPayWithJsonString:data withSchema:@"mpayPlugin" WithSender:self withDelegate:self];
+    self.payChannel = [NSMutableString stringWithString:@"MPay"];
 }
 
 - (void) aliPay:(NSString *)data{
     [[OpenSDK sharedInstance]AliPayWithJsonString:data withScheme:@"mpayPlugin" with:self];
+    self.payChannel = [NSMutableString stringWithString:@"AliPay"];
 }
 
 - (void) wechatPay:(NSString *)data{
     [[OpenSDK sharedInstance]WeChatPayWithJsonString:data withScheme:@"mpayPlugin" with:self];
+    self.payChannel = [NSMutableString stringWithString:@"WeChat Pay"];
 }
 
 -(void)OpenSDK_WithPayStatus:(bool)status WithOrder:(NSDictionary *)order{
@@ -45,7 +49,7 @@
     [map setObject:@"9000" forKey:@"resultStatus"];
     [map setObject:@"支付成功" forKey:@"result"];
     [map setObject:@"支付成功" forKey:@"memo"];
-    [map setObject:@"OpeSdk" forKey:@"type"];
+    [map setObject:self.payChannel forKey:@"type"];
     self.result(map);
 }
 
@@ -56,7 +60,7 @@
     [map setObject:errorCode forKey:@"resultStatus"];
     [map setObject:errorInfo forKey:@"result"];
     [map setObject:errorInfo forKey:@"memo"];
-    [map setObject:@"OpeSdk" forKey:@"type"];
+    [map setObject:self.payChannel forKey:@"type"];
     self.result(map);
 }
 
