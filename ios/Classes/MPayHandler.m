@@ -13,9 +13,11 @@
 
 @implementation MPayHandler
 
+FlutterResult _result;
+
 //NSMutableString *payChannel = [NSMutableString stringWithString:@"MPay"];
 - (void)pay:(NSString *)data param2:(NSNumber *)channel param3:(FlutterResult)result{
-    self.result = result; // 将参数result赋值给实例变量self.result
+    _result = result; // 将参数result赋值给实例变量self.result
     NSString *channelString = [channel stringValue];
     if([channelString isEqualToString:@"0"]){
         [self mPay:data];
@@ -50,7 +52,7 @@
     [map setObject:@"支付成功" forKey:@"result"];
     [map setObject:@"支付成功" forKey:@"memo"];
     [map setObject:self.payChannel forKey:@"type"];
-    self.result(map);
+    _result(map);
 }
 
 -(void)OpenSDK_WithFailed:(NSString *)errorInfo withErrorCode:(NSString *)errorCode{
@@ -61,7 +63,7 @@
     [map setObject:errorInfo forKey:@"result"];
     [map setObject:errorInfo forKey:@"memo"];
     [map setObject:self.payChannel forKey:@"type"];
-    self.result(map);
+    _result(map);
 }
 
 @end

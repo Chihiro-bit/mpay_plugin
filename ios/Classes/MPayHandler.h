@@ -1,13 +1,7 @@
-// MPayHandler.h
-// mpay_plugin
-//
-// Created by POP on 20/7/2023.
-//
-
 #import <Foundation/Foundation.h>
-
+#import <Flutter/Flutter.h>
+#import <OpenSDK/OpenSDK.h>
 @interface MPayHandler : NSObject <OpenSDKDelegate>
-@property (nonatomic, copy) FlutterResult result;
 @property NSMutableString *payChannel;
 /**
  @param data 支付信息

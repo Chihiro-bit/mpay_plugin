@@ -21,13 +21,15 @@ A new Flutter plugin project.
 
    s.vendored_frameworks = 'Libraries/AlipaySDK/AlipaySDK.framework'
    s.vendored_frameworks = 'Libraries/OpenSDK.framework'
-   s.vendored_libraries  = 'Libraries/WeChatSDK/*.a'
+   s.vendored_libraries  = 'Libraries/WeChatSDK/libWeChatSDK.a'
    s.resource_bundles = { 'Resources' => 'Libraries/AlipaySDK/*.framework/*.bundle' }
-#    s.frameworks = 'CoreGraphics', 'Security', 'WebKit' ,'WebKit'
-#    s.libraries = 'c++', 'z', 'sqlite3.0'
-#    s.pod_target_xcconfig = {
-#    'OTHER_LDFLAGS' => '$(inherited) -ObjC -all_load',
-#    }
+   s.frameworks = 'SystemConfiguration', 'CoreTelephony', 'QuartzCore', 'CoreText', 'CoreGraphics', 'UIKit', 'Foundation', 'CFNetwork', 'CoreMotion', 'WebKit'
+#    s.libraries = 'c++', 'z'
+#     s.frameworks = 'CoreGraphics', 'Security', 'WebKit' ,'WebKit'
+   s.libraries = 'c++', 'z', 'sqlite3.0'
+#     s.pod_target_xcconfig = {
+#     'OTHER_LDFLAGS' => '$(inherited) -ObjC -all_load',
+#     }
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
 end
