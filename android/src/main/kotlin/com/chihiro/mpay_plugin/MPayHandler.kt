@@ -11,8 +11,6 @@ import com.macau.pay.sdk.util.Logger
 
 class MPayHandler(private val result: Result, activity: Activity) : OpenSdkInterfaces {
     private val mActivity: WeakReference<Activity> = WeakReference(activity)
-
-
     fun pay(data: String?) {
         /// 调用支付
         val activity = mActivity.get()

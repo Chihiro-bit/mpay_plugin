@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import androidx.annotation.NonNull
 import com.alipay.sdk.app.EnvUtils
+import com.alipay.sdk.app.PayTask
 import com.macau.pay.sdk.OpenSdk
 import com.macau.pay.sdk.base.ConstantBase
 import com.macau.pay.sdk.util.Logger
@@ -25,14 +26,13 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var mContext: Context
     private var mActivity: Activity? = null
     private var initializationParams: Map<String, Any>? = null
-    private var isInitialized = false
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "mpay_plugin")
         channel.setMethodCallHandler(this)
         mContext = flutterPluginBinding.applicationContext
     }
 
-    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+    override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "getPlatformVersion" -> {
                 result.success("Android ${android.os.Build.VERSION.RELEASE}")
@@ -41,13 +41,23 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             "mPay" -> {
                 val mPayHandler = MPayHandler(result, mActivity!!)
                 /// 接收Flutter端支付參數
-                mPayHandler.pay(call.arguments as String?)
+                val arguments = call.arguments as Map<*, *>
+                // 支付參數
+                val data = arguments["data"] as String
+                // 支付通道，當前android用不上
+                var channel = arguments["channel"] as Int
+                mPayHandler.pay(data)
                 return
             }
 
             "init" -> {
                 setInitializationParams(call.arguments as Map<String, Any>)
                 return
+            }
+            /// 純支付寶支付，不走mPay通道
+            "aliPay" -> {
+                val payInfo = call.argument<String>("payInfo")
+                aliPay(mActivity, payInfo, result)
             }
 
             else -> {
@@ -56,7 +66,7 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         }
     }
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
     }
 
@@ -71,6 +81,28 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     override fun onDetachedFromActivity() {
+    }
+
+    /**
+     * 使用支付寶直接支付，不通過mpay通道
+     * @param activity 生命週期context
+     * @param payInfo 支付信息
+     * @param callback 支付回調
+     */
+    fun aliPay(activity: Activity?, payInfo: String?, callback: Result) {
+        val alipay = PayTask(activity)
+        try {
+            val result = alipay.payV2(payInfo, true)
+            callback.success(result)
+        } catch (e: Exception) {
+            val result: MutableMap<String?, String?> =
+                HashMap()
+            result["resultStatus"] = "-1"
+            result["result"] = "支付失敗"
+            result["memo"] = e.message
+            result["type"] = "openSDK"
+            callback.success(result)
+        }
     }
 
     private fun initializePlugin(params: Map<String, Any>) {
@@ -91,8 +123,8 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     private fun setInitializationParams(params: Map<String, Any>) {
-            // 则设置参数并初始化插件
-            initializationParams = params
-            initializationParams?.let { initializePlugin(it) }
+        // 则设置参数并初始化插件
+        initializationParams = params
+        initializationParams?.let { initializePlugin(it) }
     }
 }
