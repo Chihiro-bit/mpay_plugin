@@ -4,8 +4,9 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'mpay_plugin'
-  s.version          = '0.0.1'
+  s.version          = '1.0.3'
   s.summary          = 'A new Flutter plugin project.'
+  s.static_framework = true
   s.description      = <<-DESC
 A new Flutter plugin project.
                        DESC
