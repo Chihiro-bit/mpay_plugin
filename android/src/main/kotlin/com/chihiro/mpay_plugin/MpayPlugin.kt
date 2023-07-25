@@ -2,11 +2,9 @@ package com.chihiro.mpay_plugin
 
 import android.app.Activity
 import android.content.Context
-import androidx.annotation.NonNull
 import com.alipay.sdk.app.EnvUtils
 import com.alipay.sdk.app.PayTask
 import com.macau.pay.sdk.OpenSdk
-import com.macau.pay.sdk.base.ConstantBase
 import com.macau.pay.sdk.util.Logger
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -89,7 +87,7 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
      * @param payInfo 支付信息
      * @param callback 支付回調
      */
-    fun aliPay(activity: Activity?, payInfo: String?, callback: Result) {
+    private fun aliPay(activity: Activity?, payInfo: String?, callback: Result) {
         val alipay = PayTask(activity)
         try {
             val result = alipay.payV2(payInfo, true)

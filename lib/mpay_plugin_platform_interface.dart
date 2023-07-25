@@ -51,4 +51,12 @@ abstract class MpayPluginPlatform extends PlatformInterface {
       EnvType envType = EnvType.PRODUCTION}) {
     throw UnimplementedError('init() has not been implemented.');
   }
+  /// 支付寶支付
+  Future<Map> aliPay(String data) {
+    throw UnimplementedError('aliPay() has not been implemented.');
+  }
+  /// 微信支付
+  Future<Map> wechatPay(String data) {
+    throw UnimplementedError('wechatPay() has not been implemented.');
+  }
 }
