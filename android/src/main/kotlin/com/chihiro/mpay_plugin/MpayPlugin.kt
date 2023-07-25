@@ -14,6 +14,10 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import java.lang.ref.WeakReference
+
+
+
 
 /** MpayPlugin */
 class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
@@ -88,7 +92,9 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
      * @param callback 支付回調
      */
     private fun aliPay(activity: Activity?, payInfo: String?, callback: Result) {
-        val alipay = PayTask(activity)
+        val activityRef = WeakReference(activity)
+        val mActivity = activityRef.get()
+        val alipay = PayTask(mActivity)
         try {
             val result = alipay.payV2(payInfo, true)
             callback.success(result)
