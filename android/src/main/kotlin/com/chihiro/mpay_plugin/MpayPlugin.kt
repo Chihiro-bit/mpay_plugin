@@ -2,6 +2,7 @@ package com.chihiro.mpay_plugin
 
 import android.app.Activity
 import android.content.Context
+import android.os.AsyncTask
 import com.alipay.sdk.app.EnvUtils
 import com.alipay.sdk.app.PayTask
 import com.macau.pay.sdk.OpenSdk
@@ -59,7 +60,7 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             /// 純支付寶支付，不走mPay通道
             "aliPay" -> {
                 val payInfo = call.argument<String>("payInfo")
-                aliPay(mActivity, payInfo, result)
+                pay(mActivity, payInfo, result)
             }
 
             else -> {
@@ -107,6 +108,35 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             result["type"] = "openSDK"
             callback.success(result)
         }
+    }
+
+    fun pay(currentActivity: Activity?, payInfo: String?, callback: Result) {
+        object : AsyncTask<String?, Any?, Map<String?, String?>>() {
+            override fun onPostExecute(result: Map<String?, String?>) {
+                val error = result["\$error"]
+                if (error != null) {
+                    callback.error(error, "支付发生错误", null)
+                } else {
+                    callback.success(result)
+                }
+            }
+
+            override fun doInBackground(vararg params: String?): Map<String?, String?> {
+                return try {
+                    val alipay = PayTask(currentActivity)
+                    alipay.payV2(payInfo, true)
+                } catch (e: Exception) {
+                    val result: MutableMap<String?, String?> =
+                        HashMap()
+                    result["\$error"] = e.message
+                    result
+                }
+            }
+        }.execute()
+
+
+//    Thread payThread = new Thread(payRunnable);
+//    payThread.start();
     }
 
     private fun initializePlugin(params: Map<String, Any>) {
