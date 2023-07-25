@@ -21,4 +21,19 @@ class MpayPlugin {
   }) {
     return MpayPluginPlatform.instance.init(envEnum: envEnum, envType: envType);
   }
+
+  /// 支付寶支付
+  Future<ResultModel> aliPay(String payInfo) async{
+    ResultModel resultModel = const ResultModel();
+    var result = await MpayPluginPlatform.instance.aliPay(payInfo);
+    resultModel = ResultModel.fromJson(result);
+    return resultModel;
+  }
+  /// 微信支付
+  Future<ResultModel> wechatPay(String payInfo) async{
+    ResultModel resultModel = const ResultModel();
+    var result = await MpayPluginPlatform.instance.wechatPay(payInfo);
+    resultModel = ResultModel.fromJson(result);
+    return resultModel;
+  }
 }
