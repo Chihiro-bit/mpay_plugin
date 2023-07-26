@@ -16,20 +16,30 @@ class MethodChannelMpayPlugin extends MpayPluginPlatform {
   }
 
   @override
-  Future<Map> mPay(String? data, [PayChannel channel = PayChannel.mPay]) async {
-    var response = await methodChannel
-        .invokeMethod<dynamic>('mPay', {"data": data, "channel": channel.value});
-    return response;
-  }
-  @override
-  Future<Map> aliPay(String payInfo)async{
-    var response = await methodChannel
-        .invokeMethod<dynamic>('aliPay', {"payInfo": payInfo});
+  Future<Map> mPay(
+    String? data, {
+    PayChannel channel = PayChannel.mPay,
+    String? withScheme,
+  }) async {
+    var response = await methodChannel.invokeMethod<dynamic>('mPay', {
+      "data": data,
+      "channel": channel.value,
+      "withScheme": withScheme,
+    });
     return response;
   }
 
   @override
-  Future<Map> wechatPay(String payInfo)async{
+  Future<Map> aliPay(String payInfo, String setIosUrlSchema) async {
+    var response = await methodChannel.invokeMethod<dynamic>('aliPay', {
+      "payInfo": payInfo,
+      "setIosUrlSchema": setIosUrlSchema,
+    });
+    return response;
+  }
+
+  @override
+  Future<Map> wechatPay(String payInfo) async {
     var response = await methodChannel
         .invokeMethod<dynamic>('wechatPay', {"payInfo": payInfo});
     return response;

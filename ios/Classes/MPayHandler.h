@@ -3,18 +3,25 @@
 #import <OpenSDK/OpenSDK.h>
 @interface MPayHandler : NSObject <OpenSDKDelegate>
 @property NSMutableString *payChannel;
+
 /**
  @param data 支付信息
  @param channel 支付渠道（ 0->mPay  ,  1-> alipay  ,  2->wechatPay ）
  */
-- (void)pay:(NSString *)data param2:(NSNumber *)channel param3:(FlutterResult)result;
+- (void)pay:(NSString *)data param2:(NSNumber *)channel param3:(FlutterResult)result param4:(NSString *)withScheme;
 
 // Mpay
-- (void) mPay:(NSString *)data;
+- (void) mPay:(NSString *)data param2:(NSString *) withScheme;
 // AliPay
-- (void) aliPay:(NSString *)data;
+- (void) aliPay:(NSString *)data param2:(NSString *) withScheme;
 // WeChatPay
-- (void) wechatPay:(NSString *)data;
+- (void) wechatPay:(NSString *)data param2:(NSString *) withScheme;
+
+/**
+  普通支付寶
+ */
+- (void)processFlutterResult:(FlutterResult)result;
+- (void)processMapValue:(NSDictionary *)mapValue;
 
 #pragma mark - SDK Delegate 回調代理
 /**

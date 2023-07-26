@@ -16,33 +16,39 @@
 FlutterResult _result;
 
 //NSMutableString *payChannel = [NSMutableString stringWithString:@"MPay"];
-- (void)pay:(NSString *)data param2:(NSNumber *)channel param3:(FlutterResult)result{
+- (void)pay:(NSString *)data param2:(NSNumber *)channel param3:(FlutterResult)result param4:(NSString *) withScheme{
     _result = result; // 将参数result赋值给实例变量self.result
     NSString *channelString = [channel stringValue];
     if([channelString isEqualToString:@"0"]){
-        [self mPay:data];
+        [self mPay:data param2:withScheme];
     }else if([channelString isEqualToString:@"1"]){
-        [self aliPay:data];
+        [self aliPay:data param2:withScheme];
     }else if([channelString isEqualToString:@"2"]){
-        [self wechatPay:data];
+        [self wechatPay:data param2:withScheme];
     }
 }
 
-- (void) mPay:(NSString *)data{
-    [[OpenSDK sharedInstance]MPayWithJsonString:data withSchema:@"mpayPlugin" WithSender:self withDelegate:self];
+- (void) mPay:(NSString *)data param2:(NSString *) withScheme{
+    [[OpenSDK sharedInstance]MPayWithJsonString:data withSchema:withScheme WithSender:self withDelegate:self];
     self.payChannel = [NSMutableString stringWithString:@"MPay"];
 }
 
-- (void) aliPay:(NSString *)data{
-    [[OpenSDK sharedInstance]AliPayWithJsonString:data withScheme:@"mpayPlugin" with:self];
+- (void) aliPay:(NSString *)data  param2:(NSString *) withScheme{
+    [[OpenSDK sharedInstance]AliPayWithJsonString:data withScheme:withScheme with:self];
     self.payChannel = [NSMutableString stringWithString:@"AliPay"];
 }
 
-- (void) wechatPay:(NSString *)data{
-    [[OpenSDK sharedInstance]WeChatPayWithJsonString:data withScheme:@"mpayPlugin" with:self];
+- (void) wechatPay:(NSString *)data param2:(NSString *) withScheme{
+    [[OpenSDK sharedInstance]WeChatPayWithJsonString:data withScheme:withScheme with:self];
     self.payChannel = [NSMutableString stringWithString:@"WeChat Pay"];
 }
 
+- (void) processFlutterResult:(FlutterResult)result{
+    _result = result; // 将参数result赋值给实例变量self.result
+}
+- (void) processMapValue:(NSDictionary *)mapValue{
+    _result(mapValue);
+}
 -(void)OpenSDK_WithPayStatus:(bool)status WithOrder:(NSDictionary *)order{
     NSLog(@"Order Info: %@", order);
     NSMutableDictionary *map = [NSMutableDictionary dictionary];

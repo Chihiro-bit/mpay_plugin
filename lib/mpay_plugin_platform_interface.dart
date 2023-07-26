@@ -41,20 +41,27 @@ abstract class MpayPluginPlatform extends PlatformInterface {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
 
-  Future<Map> mPay(String? data, [PayChannel channel = PayChannel.mPay]) {
+  Future<Map> mPay(
+    String? data, {
+    PayChannel channel = PayChannel.mPay,
+    String? withScheme,
+  }) {
     throw UnimplementedError('mPay() has not been implemented.');
   }
 
   /// 初始化设置(
-  Future<void> init(
-      {AliPayEnv envEnum = AliPayEnv.ONLINE,
-      EnvType envType = EnvType.PRODUCTION}) {
+  Future<void> init({
+    AliPayEnv envEnum = AliPayEnv.ONLINE,
+    EnvType envType = EnvType.PRODUCTION,
+  }) {
     throw UnimplementedError('init() has not been implemented.');
   }
+
   /// 支付寶支付
-  Future<Map> aliPay(String data) {
+  Future<Map> aliPay(String data,String setIosUrlSchema) {
     throw UnimplementedError('aliPay() has not been implemented.');
   }
+
   /// 微信支付
   Future<Map> wechatPay(String data) {
     throw UnimplementedError('wechatPay() has not been implemented.');

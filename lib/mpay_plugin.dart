@@ -6,9 +6,14 @@ class MpayPlugin {
     return MpayPluginPlatform.instance.getPlatformVersion();
   }
 
-  Future<ResultModel> mPay(String? data,PayChannel channel) async {
+  Future<ResultModel> mPay(
+    String? data,
+    PayChannel channel, {
+    String? withScheme,
+  }) async {
     ResultModel resultModel = const ResultModel();
-    var result = await MpayPluginPlatform.instance.mPay(data,channel);
+    var result = await MpayPluginPlatform.instance
+        .mPay(data, channel: channel, withScheme: withScheme);
     resultModel = ResultModel.fromJson(result);
     return resultModel;
   }
@@ -23,14 +28,17 @@ class MpayPlugin {
   }
 
   /// 支付寶支付
-  Future<ResultModel> aliPay(String payInfo) async{
+  Future<ResultModel> aliPay(String payInfo, String setIosUrlSchema) async {
     ResultModel resultModel = const ResultModel();
-    var result = await MpayPluginPlatform.instance.aliPay(payInfo);
+    var result =
+        await MpayPluginPlatform.instance.aliPay(payInfo, setIosUrlSchema);
+    print("mpay_plugin----->$result");
     resultModel = ResultModel.fromJson(result);
     return resultModel;
   }
+
   /// 微信支付
-  Future<ResultModel> wechatPay(String payInfo) async{
+  Future<ResultModel> wechatPay(String payInfo) async {
     ResultModel resultModel = const ResultModel();
     var result = await MpayPluginPlatform.instance.wechatPay(payInfo);
     resultModel = ResultModel.fromJson(result);

@@ -22,7 +22,8 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final _mPayPlugin = MpayPlugin();
   late Dio dio;
-
+  String payInfo =
+      """_input_charset=\"UTF-8\"&body=\"Product\"&currency=\"HKD\"&forex_biz=\"FP\"&it_b_pay=\"179m\"&notify_url=\"https://api.yedpay.com/notify/alipay-online\"&out_trade_no=\"169034360430235\"&partner=\"2088721929663896\"&payment_type=\"1\"&product_code=\"NEW_WAP_OVERSEAS_SELLER\"&return_url=\"https://api.yedpay.com/alipay-online\"&secondary_merchant_id=\"2NMJVPOMGD3YO70RL8\"&secondary_merchant_industry=\"7538\"&secondary_merchant_name=\"TTECH Global Service Limited\"&seller_id=\"2088721929663896\"&service=\"mobile.securitypay.pay\"&sign=\"bKSHYm91pFmKAD%2FCTr5K0B9%2F2dHHuykSkcVP9WJIpBlxthz5LkAwkqkRENFrKgOfd3JNSlth3KdkbZ9EB9aWpTm1zuGMJ2wwgljoi2jsUNao5y3AbkZfBQ1vgD8KT6UdHmPq%2BckZUoqNqr4MjN4bVNYAb4xXBGVw9Xh%2B%2Bch6AUjmKqXt3R8qk4NG4w9xgsDgItFxdiOeNPoBkbSc19FwwCqrEwwQ%2BEHyTTfgSk3UJ9yl3R2JL1r%2Fi2nNDOLFuXGzExOQPipr6KtKjQ1rS5oF3KAkaCIpLugNT4LfkSMS3gf0ohBOcr%2BA%2FBDFVG3u4xOHD84yUxmHMDJNuupOLyF8%2BA%3D%3D\"&sign_type=\"RSA\"&subject=\"Product\"&total_fee=\"0.20\"""";
   @override
   void initState() {
     super.initState();
@@ -54,7 +55,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> pay(String type) async {
-    EasyLoading.show(status: "loading...",maskType: EasyLoadingMaskType.black);
+    EasyLoading.show(status: "loading...", maskType: EasyLoadingMaskType.black);
     Map<String, dynamic> datas = {
       "payChannel": type,
       "totalFee": "5",
@@ -67,24 +68,24 @@ class _MyAppState extends State<MyApp> {
 
     String jsonString = json.encode(response.data["data"]["signData"]);
     Logger().i(jsonString);
-    try{
+    try {
       PayChannel payChannel = PayChannel.aliPay;
-      if(type=="mpay"){
+      if (type == "mpay") {
         payChannel = PayChannel.mPay;
-      }else if(type =="alipay"){
+      } else if (type == "alipay") {
         payChannel = PayChannel.aliPay;
-      }else{
-        payChannel =PayChannel.wechatPay;
+      } else {
+        payChannel = PayChannel.wechatPay;
       }
-      var result = await _mPayPlugin.mPay(jsonString,payChannel);
-      if(result.resultStatus=="9000"){
+      var result = await _mPayPlugin.mPay(jsonString, payChannel);
+      if (result.resultStatus == "9000") {
         EasyLoading.showSuccess("支付成功");
-      }else{
-        EasyLoading.showError(result.result??"");
+      } else {
+        EasyLoading.showError(result.result ?? "");
       }
       Logger().i(result.toString());
       EasyLoading.dismiss();
-    }catch(e){
+    } catch (e) {
       EasyLoading.dismiss();
     }
   }
@@ -92,7 +93,6 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Plugin example app'),
@@ -120,6 +120,13 @@ class _MyAppState extends State<MyApp> {
                     backgroundColor: MaterialStateProperty.all(Colors.indigo),
                   ),
                   child: const Text("AliPay"),
+                ),
+                ElevatedButton(
+                  onPressed: () => _mPayPlugin.aliPay(payInfo,"com.mpay_plugin.demo"),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(Colors.indigo),
+                  ),
+                  child: const Text("Not MPayAliPay"),
                 ),
                 ElevatedButton(
                   onPressed: () => pay("wechat"),
