@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:mpay_plugin/arguments.dart';
 import 'dart:async';
 import 'package:mpay_plugin/mpay_plugin.dart';
 import 'package:logger/logger.dart';
@@ -32,7 +33,7 @@ class _MyAppState extends State<MyApp> {
       envType: EnvType.UAT,
     );
     dio = Dio();
-    dio.options.baseUrl = "http://yc2x9m.natappfree.cc";
+    dio.options.baseUrl = "YOUR_BASE_URL";
     dio.options.connectTimeout = const Duration(seconds: 15);
     dio.options.receiveTimeout = const Duration(seconds: 15);
     dio.interceptors.add(
@@ -129,7 +130,15 @@ class _MyAppState extends State<MyApp> {
                   child: const Text("Not MPayAliPay"),
                 ),
                 ElevatedButton(
-                  onPressed: () => pay("wechat"),
+                  onPressed: () => _mPayPlugin.wechatPay(Payment(
+                    appId: 'appid',
+                    partnerId: 'partnerid',
+                    prepayId: 'prepayid',
+                    packageValue: 'package',
+                    nonceStr: 'noncestr',
+                    timestamp: 0,
+                    sign: 'sign',
+                  )),
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(Colors.indigo),
                   ),

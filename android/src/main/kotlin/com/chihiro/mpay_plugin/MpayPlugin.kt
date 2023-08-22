@@ -5,8 +5,11 @@ import android.content.Context
 import android.os.AsyncTask
 import com.alipay.sdk.app.EnvUtils
 import com.alipay.sdk.app.PayTask
+import com.chihiro.mpay_plugin.handlers.WXAPiHandler
 import com.macau.pay.sdk.OpenSdk
 import com.macau.pay.sdk.util.Logger
+import com.tencent.mm.opensdk.modelbiz.WXOpenBusinessWebview
+import com.tencent.mm.opensdk.modelpay.PayReq
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -62,7 +65,12 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 val payInfo = call.argument<String>("payInfo")
                 pay(mActivity, payInfo, result)
             }
-
+            "wechatPay" ->{
+                payWechat(call, result)
+            }
+            "wechatPayHongKongWallet" ->{
+                payWithHongKongWallet(call, result)
+            }
             else -> {
                 result.notImplemented()
             }
@@ -160,5 +168,36 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         // 则设置参数并初始化插件
         initializationParams = params
         initializationParams?.let { initializePlugin(it) }
+    }
+
+    private fun payWechat(call: MethodCall, result: Result) {
+
+        if (WXAPiHandler.wxApi == null) {
+            result.error("Unassigned WxApi", "please config wxapi first", null)
+            return
+        } else {
+            // 将该app注册到微信
+            val request = PayReq()
+            request.appId = call.argument("appId")
+            request.partnerId = call.argument("partnerId")
+            request.prepayId = call.argument("prepayId")
+            request.packageValue = call.argument("packageValue")
+            request.nonceStr = call.argument("nonceStr")
+            request.timeStamp = call.argument<Long>("timeStamp").toString()
+            request.sign = call.argument("sign")
+            request.signType = call.argument("signType")
+            request.extData = call.argument("extData")
+            val done = WXAPiHandler.wxApi?.sendReq(request)
+            result.success(done)
+        }
+    }
+    private fun payWithHongKongWallet(call: MethodCall, result: Result) {
+        val prepayId = call.argument<String>("prepayId") ?: ""
+        val request = WXOpenBusinessWebview.Req()
+        request.businessType = 1
+        request.queryInfo = hashMapOf(
+            "token" to prepayId
+        )
+        result.success(WXAPiHandler.wxApi?.sendReq(request))
     }
 }
