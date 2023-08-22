@@ -73,12 +73,12 @@ void initState() {
 --- 调用如下
 ##### aliPay
 ```dart
-_mPayPlugin.aliPay('payInfo',"com.mpay_plugin.demo"), // payInfo是请求后台返回来的支付字符串，com.mpay_plugin.demo是shceme ios端需要，并且需要在info.plist中配置 URL Types
+var response = await _mPayPlugin.aliPay('payInfo',"com.mpay_plugin.demo"), // payInfo是请求后台返回来的支付字符串，com.mpay_plugin.demo是shceme ios端需要，并且需要在info.plist中配置 URL Types
 ```
 
 ##### wechatPay
 ```dart
-_mPayPlugin.wechatPay(Payment(
+var response = await _mPayPlugin.wechatPay(Payment(
 appId: 'appid',
 partnerId: 'partnerid',
 prepayId: 'prepayid',
