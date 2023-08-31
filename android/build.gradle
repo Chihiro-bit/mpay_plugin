@@ -62,8 +62,14 @@ android {
         api(name: 'openSdk_v1.0.4_202105281703', ext: "jar")
         api(name: 'wechat-sdk-android-without-mta-5.5.8', ext: "jar")
         api(name: 'gson-2.2.4', ext: "jar")
-        api(name: 'okhttp-3.10.0', ext: "jar")
-        api(name: 'okio-1.13.0', ext: "jar")
+//        api(name: 'okhttp-3.10.0', ext: "jar")
+//        api(name: 'okio-1.13.0', ext: "jar")
+        // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+        implementation "com.squareup.okhttp3:okhttp:3.14.9"
+        // https://mvnrepository.com/artifact/com.squareup.okio/okio
+        implementation "com.squareup.okio:okio:1.17.2"
+
+
     }
 
     testOptions {
@@ -71,9 +77,9 @@ android {
             useJUnitPlatform()
 
             testLogging {
-               events "passed", "skipped", "failed", "standardOut", "standardError"
-               outputs.upToDateWhen {false}
-               showStandardStreams = true
+                events "passed", "skipped", "failed", "standardOut", "standardError"
+                outputs.upToDateWhen { false }
+                showStandardStreams = true
             }
         }
     }
