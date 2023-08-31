@@ -33,7 +33,7 @@ void initState() {
 ```
 
 #### MPay支付
---- payChannel 是提供给后台的使用的支付方式，一般有 mpay,alipay,wechatPay 三个，需要根据这个参数设置不同的PayChannel 枚举传入，否则ios端无法判断是什么支付类型
+--payChannel 是提供给后台的使用的支付方式，一般有 mpay,alipay,wechatPay 三个，需要根据这个参数设置不同的PayChannel 枚举传入，否则ios端无法判断是什么支付类型
 ```dart
   Future<void> pay(String type) async {
     Map<String, dynamic> datas = {
