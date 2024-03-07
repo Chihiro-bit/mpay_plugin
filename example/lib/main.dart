@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
       envType: EnvType.UAT,
     );
     dio = Dio();
-    dio.options.baseUrl = "http://yc2x9m.natappfree.cc";
+    dio.options.baseUrl = "YOUR_BASEURL;
     dio.options.connectTimeout = const Duration(seconds: 15);
     dio.options.receiveTimeout = const Duration(seconds: 15);
     dio.interceptors.add(
