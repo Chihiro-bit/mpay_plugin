@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:mpay_plugin/arguments.dart';
 
 import 'mpay_plugin_platform_interface.dart';
 
@@ -39,10 +40,18 @@ class MethodChannelMpayPlugin extends MpayPluginPlatform {
   }
 
   @override
-  Future<Map> wechatPay(String payInfo) async {
-    var response = await methodChannel
-        .invokeMethod<dynamic>('wechatPay', {"payInfo": payInfo});
-    return response;
+  Future<Map> wechatPay(PayType which) async {
+    // var response = await methodChannel
+    //     .invokeMethod<dynamic>('', {"payInfo": payInfo});
+    // return response;
+    switch (which) {
+      case Payment():
+        return await methodChannel.invokeMethod(
+            'wechatPay', which.arguments);
+      case HongKongWallet():
+        return await methodChannel.invokeMethod(
+            'wechatPayHongKongWallet', which.arguments);
+    }
   }
 
   @override

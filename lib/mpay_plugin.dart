@@ -1,3 +1,5 @@
+import 'package:mpay_plugin/arguments.dart';
+
 import 'mpay_plugin_platform_interface.dart';
 import 'result_model.dart';
 
@@ -38,9 +40,9 @@ class MpayPlugin {
   }
 
   /// 微信支付
-  Future<ResultModel> wechatPay(String payInfo) async {
+  Future<ResultModel> wechatPay(PayType payType) async {
     ResultModel resultModel = const ResultModel();
-    var result = await MpayPluginPlatform.instance.wechatPay(payInfo);
+    var result = await MpayPluginPlatform.instance.wechatPay(payType);
     resultModel = ResultModel.fromJson(result);
     return resultModel;
   }
