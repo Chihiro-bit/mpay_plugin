@@ -63,6 +63,16 @@ abstract class MpayPluginPlatform extends PlatformInterface {
     throw UnimplementedError('aliPay() has not been implemented.');
   }
 
+  // 注册微信支付
+  Future<bool> registerApi({
+    required String appId,
+    bool doOnIOS = true,
+    bool doOnAndroid = true,
+    String? universalLink,
+  }) {
+    throw UnimplementedError('registerWxApi() has not been implemented.');
+  }
+
   /// 微信支付
   Future<Map> wechatPay(PayType which) {
     throw UnimplementedError('wechatPay() has not been implemented.');

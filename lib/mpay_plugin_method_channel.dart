@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mpay_plugin/arguments.dart';
@@ -38,6 +40,34 @@ class MethodChannelMpayPlugin extends MpayPluginPlatform {
     });
     return response;
   }
+
+  @override
+  Future<bool> registerApi({
+    required String appId,
+    bool doOnIOS = true,
+    bool doOnAndroid = true,
+    String? universalLink,
+  }) async {
+    if (doOnIOS && Platform.isIOS) {
+      if (universalLink == null ||
+          universalLink.trim().isEmpty ||
+          !universalLink.startsWith('https')) {
+        throw ArgumentError.value(
+          universalLink,
+          "You're trying to use illegal universal link, see "
+              'https://developers.weixin.qq.com/doc/oplatform/Mobile_App/Access_Guide/iOS.html '
+              'for more detail',
+        );
+      }
+    }
+    return await methodChannel.invokeMethod('registerApp', {
+      'appId': appId,
+      'iOS': doOnIOS,
+      'android': doOnAndroid,
+      'universalLink': universalLink
+    });
+  }
+
 
   @override
   Future<Map> wechatPay(PayType which) async {

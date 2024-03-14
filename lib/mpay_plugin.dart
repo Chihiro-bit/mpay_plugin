@@ -39,6 +39,20 @@ class MpayPlugin {
     return resultModel;
   }
 
+  // 注册微信
+  Future<bool> registerApi({
+    required String appId,
+    bool doOnIOS = true,
+    bool doOnAndroid = true,
+    String? universalLink,
+  }) async {
+    return MpayPluginPlatform.instance.registerApi(
+        appId: appId,
+        doOnAndroid: doOnAndroid,
+        doOnIOS: doOnIOS,
+        universalLink: universalLink);
+  }
+
   /// 微信支付
   Future<ResultModel> wechatPay(PayType payType) async {
     ResultModel resultModel = const ResultModel();

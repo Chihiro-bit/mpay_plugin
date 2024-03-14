@@ -10,6 +10,7 @@ import com.macau.pay.sdk.OpenSdk
 import com.macau.pay.sdk.util.Logger
 import com.tencent.mm.opensdk.modelbiz.WXOpenBusinessWebview
 import com.tencent.mm.opensdk.modelpay.PayReq
+import com.tencent.mm.opensdk.utils.ILog
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -19,9 +20,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import java.lang.ref.WeakReference
-
-
-
+//import com.jarvan.fluwx.FluwxConfigurations
 
 /** MpayPlugin */
 class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
@@ -36,6 +35,29 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "mpay_plugin")
         channel.setMethodCallHandler(this)
         mContext = flutterPluginBinding.applicationContext
+    }
+
+    private val weChatLogger = object : ILog {
+
+        override fun d(p0: String?, p1: String?) {
+            logToFlutter(p0, p1)
+        }
+
+        override fun i(p0: String?, p1: String?) {
+            logToFlutter(p0, p1)
+        }
+
+        override fun e(p0: String?, p1: String?) {
+            logToFlutter(p0, p1)
+        }
+
+        override fun v(p0: String?, p1: String?) {
+            logToFlutter(p0, p1)
+        }
+
+        override fun w(p0: String?, p1: String?) {
+            logToFlutter(p0, p1)
+        }
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
@@ -65,12 +87,22 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 val payInfo = call.argument<String>("payInfo")
                 pay(mActivity, payInfo, result)
             }
-            "wechatPay" ->{
+
+            "registerApp" -> {
+                WXAPiHandler.registerApp(call, result, mActivity)
+//                if (FluwxConfigurations.enableLogging) {
+//                    WXAPiHandler.wxApi?.setLogImpl(weChatLogger)
+//                }
+            }
+
+            "wechatPay" -> {
                 payWechat(call, result)
             }
-            "wechatPayHongKongWallet" ->{
+
+            "wechatPayHongKongWallet" -> {
                 payWithHongKongWallet(call, result)
             }
+
             else -> {
                 result.notImplemented()
             }
@@ -191,6 +223,7 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             result.success(done)
         }
     }
+
     private fun payWithHongKongWallet(call: MethodCall, result: Result) {
         val prepayId = call.argument<String>("prepayId") ?: ""
         val request = WXOpenBusinessWebview.Req()
@@ -200,4 +233,13 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         )
         result.success(WXAPiHandler.wxApi?.sendReq(request))
     }
+
+    private fun logToFlutter(tag: String?, message: String?) {
+        channel.invokeMethod(
+            "wechatLog", mapOf(
+                "detail" to "$tag : $message"
+            )
+        )
+    }
+
 }
