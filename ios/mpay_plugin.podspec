@@ -14,13 +14,24 @@ A new Flutter plugin project.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
-  s.public_header_files = 'Classes/**/*.h'
+#   s.source_files = 'Classes/**/*'
+#   s.public_header_files = 'Classes/**/*.h'
+  s.source_files = [
+    'Classes/**/*',
+    'WeChatSDK/**/*'
+  ]
+  s.public_header_files = [
+    'Classes/**/*.h',
+    'WeChatSDK/**/*.h'
+  ]
+
   s.dependency 'Flutter'
   s.platform = :ios, '11.0'
 #  s.dependency 'AlipaySDK-iOS'
 
-
+#   pod_target_xcconfig = {
+#       'OTHER_LDFLAGS' => '$(inherited) -ObjC -all_load'
+#   }
    s.vendored_frameworks = ['Libraries/AlipaySDK/AlipaySDK.framework', 'Libraries/OpenSDK.framework']
    s.vendored_libraries  = 'Libraries/WeChatSDK/libWeChatSDK.a'
    s.resource_bundles = { 'Resources' => 'Libraries/AlipaySDK/*.framework/*.bundle' }

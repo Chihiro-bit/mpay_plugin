@@ -15,7 +15,7 @@
 // AliPay
 - (void) aliPay:(NSString *)data param2:(NSString *) withScheme;
 // WeChatPay
-- (void) wechatPay:(NSString *)data param2:(NSString *) withScheme;
+- (void) wechatPay:(FlutterMethodCall *)data param2:(NSString *) withScheme;
 
 /**
   普通支付寶

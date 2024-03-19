@@ -6,4 +6,6 @@
 
 - (void)AliPaymentResult:(NSURL *)url;
 
+//- (void)WeChatPaymentResult:(NSNotification *)aNotification;
+
 @end

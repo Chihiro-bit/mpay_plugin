@@ -1,6 +1,0 @@
-framework module OpenSDK {
-  umbrella header "OpenSDK.h"
-
-  export *
-  module * { export * }
-}
