@@ -1,21 +1,52 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mpay_plugin/arguments.dart';
+import 'package:mpay_plugin/response/wechat_response.dart';
 
 import 'mpay_plugin_platform_interface.dart';
 
 /// An implementation of [MpayPluginPlatform] that uses method channels.
 class MethodChannelMpayPlugin extends MpayPluginPlatform {
+
+  final StreamController<WeChatResponse> _responseEventHandler = StreamController.broadcast();
+
   @visibleForTesting
   final methodChannel = const MethodChannel('mpay_plugin');
+
+  MethodChannelMpayPlugin() {
+    methodChannel.setMethodCallHandler(_methodHandler);
+  }
+
+  @override
+  Stream<WeChatResponse> get responseEventHandler =>
+      _responseEventHandler.stream;
 
   @override
   Future<String?> getPlatformVersion() async {
     final version =
         await methodChannel.invokeMethod<String>('getPlatformVersion');
     return version;
+  }
+
+  Future _methodHandler(MethodCall methodCall) {
+    if (methodCall.method == "wechatLog") {
+      _printLog(methodCall.arguments);
+    } else {
+      final response = WeChatResponse.create(
+        methodCall.method,
+        methodCall.arguments,
+      );
+      _responseEventHandler.add(response);
+    }
+
+    return Future.value();
+  }
+
+  _printLog(Map data) {
+    debugPrint("FluwxLog: ${data["detail"]}");
   }
 
   @override
@@ -70,7 +101,7 @@ class MethodChannelMpayPlugin extends MpayPluginPlatform {
 
 
   @override
-  Future<Map> wechatPay(PayType which) async {
+  Future<bool> wechatPay(PayType which) async {
     // var response = await methodChannel
     //     .invokeMethod<dynamic>('', {"payInfo": payInfo});
     // return response;

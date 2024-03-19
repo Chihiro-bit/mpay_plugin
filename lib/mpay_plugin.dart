@@ -1,11 +1,28 @@
 import 'package:mpay_plugin/arguments.dart';
+import 'package:mpay_plugin/response/cancelable.dart';
+import 'package:mpay_plugin/response/wechat_response.dart';
 
 import 'mpay_plugin_platform_interface.dart';
 import 'result_model.dart';
 
 class MpayPlugin {
+
+  late final WeakReference<void Function(WeChatResponse event)> responseListener;
+  final List<WeChatResponseSubscriber> _responseListeners = [];
+
   Future<String?> getPlatformVersion() {
     return MpayPluginPlatform.instance.getPlatformVersion();
+  }
+  MpayPlugin() {
+    responseListener = WeakReference((event) {
+      for (var listener in _responseListeners) {
+        listener(event);
+      }
+    });
+    final target = responseListener.target;
+    if (target != null) {
+      MpayPluginPlatform.instance.responseEventHandler.listen(target);
+    }
   }
 
   Future<ResultModel> mPay(
@@ -54,10 +71,24 @@ class MpayPlugin {
   }
 
   /// 微信支付
-  Future<ResultModel> wechatPay(PayType payType) async {
-    ResultModel resultModel = const ResultModel();
-    var result = await MpayPluginPlatform.instance.wechatPay(payType);
-    resultModel = ResultModel.fromJson(result);
-    return resultModel;
+  Future<bool> wechatPay(PayType payType) async {
+    return await MpayPluginPlatform.instance.wechatPay(payType);
+  }
+
+  FluwxCancelable addSubscriber(WeChatResponseSubscriber listener) {
+    _responseListeners.add(listener);
+    return FluwxCancelableImpl(onCancel: () {
+      removeSubscriber(listener);
+    });
+  }
+
+  /// remove your subscriber from WeChat
+  removeSubscriber(WeChatResponseSubscriber listener) {
+    _responseListeners.remove(listener);
+  }
+
+  /// remove all existing
+  clearSubscribers() {
+    _responseListeners.clear();
   }
 }
