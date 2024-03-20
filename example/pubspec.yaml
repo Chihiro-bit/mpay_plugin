@@ -7,14 +7,6 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 environment:
   sdk: '>=3.0.1 <4.0.0'
 
-mpay_plugin:
-  app_id: '123456'
-  debug_logging: true # Logging in debug mode.
-  android:
-  #    interrupt_wx_request: true # Defaults to true.
-  #    flutter_activity: 'MainActivity' # Defaults to app's launcher
-  ios:
-    universal_link: https://testdomain.com
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
 # consider running `flutter pub upgrade --major-versions`. Alternatively,
