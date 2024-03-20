@@ -32,10 +32,10 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> registerWeChat() async {
     var aa = await _mPayPlugin.registerApi(
-      appId: "wx184974b83369b00e",
+      appId: "YOUR_APPID",
       doOnIOS: true,
       doOnAndroid: true,
-      universalLink: "https://mungo.mynatapp.cc/",
+      universalLink: "YOUR_UNIVERSALLINK_LINK",
     );
     Logger().i(aa);
   }
@@ -49,7 +49,7 @@ class _MyAppState extends State<MyApp> {
       envType: EnvType.UAT,
     );
     dio = Dio();
-    dio.options.baseUrl = "https://mungo.mynatapp.cc/";
+    dio.options.baseUrl = "YOUR_BASER_URL";
     dio.options.connectTimeout = const Duration(seconds: 15);
     dio.options.receiveTimeout = const Duration(seconds: 15);
     dio.interceptors.add(LogInterceptor(responseBody: true));
