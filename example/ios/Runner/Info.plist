@@ -53,7 +53,7 @@
 			<string>weixin</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>wx184974b83369b00e</string>
+				<string>YOUR_WECHAT_APPID</string>
 			</array>
 		</dict>
 	</array>
