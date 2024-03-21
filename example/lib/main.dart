@@ -32,10 +32,10 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> registerWeChat() async {
     var aa = await _mPayPlugin.registerApi(
-      appId: "YOUR_APPID",
+      appId: "YOUR_WECHAT_APPID",
       doOnIOS: true,
       doOnAndroid: true,
-      universalLink: "YOUR_UNIVERSALLINK_LINK",
+      universalLink: "YOUR_UNIVERSSL_LINK",
     );
     Logger().i(aa);
   }
@@ -49,13 +49,13 @@ class _MyAppState extends State<MyApp> {
       envType: EnvType.UAT,
     );
     dio = Dio();
-    dio.options.baseUrl = "YOUR_BASER_URL";
+    dio.options.baseUrl = "YOUR_BASER_URI";
     dio.options.connectTimeout = const Duration(seconds: 15);
     dio.options.receiveTimeout = const Duration(seconds: 15);
     dio.interceptors.add(LogInterceptor(responseBody: true));
     // 添加请求头
     dio.options.headers["auth-token"] =
-        "eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjEyLCJzdWIiOiJUb2tlbiIsImF1ZCI6Im9oNWQzNiIsInRlbmFudEtleSI6ImFkbWluIiwibmFtZSI6ImxqeCIsImV4cCI6MTcxMDgxMzM4NiwiZGV2aWNlIjoiYXBwIiwiaWF0IjoxNzEwNzI2OTg2fQ.8uyOD8G_o64N442xbMbCqi6y0XXoqKDMaOl98eHqHpQ";
+        "eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjEyLCJzdWIiOiJUb2tlbiIsImF1ZCI6Im9oNWQzNiIsInRlbmFudEtleSI6ImFkbWluIiwibmFtZSI6ImxqeCIsImV4cCI6MTcxMTA3MjIxMCwiZGV2aWNlIjoiYXBwIiwiaWF0IjoxNzEwOTg1ODEwfQ.ar6gl8tMEn18LXO99_uwhjJFEoZqmjIk59HtcQZ94Tc";
     dio.options.headers["content-type"] = "application/x-www-form-urlencoded";
     dio.interceptors.add(
       InterceptorsWrapper(
@@ -77,7 +77,7 @@ class _MyAppState extends State<MyApp> {
 
     responseListener = (response) {
       if (response is WeChatPaymentResponse) {
-        Logger().i(response);
+        Logger().i(response.isSuccessful);
       }
     };
     _mPayPlugin.addSubscriber(responseListener);

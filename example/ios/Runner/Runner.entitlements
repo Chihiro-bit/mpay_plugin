@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>https://mungo.mynatapp.cc/apple-app-site-association</string>
+		<string>YOUR_URI_UNIVERSSL_LINK</string>
 	</array>
 </dict>
 </plist>
