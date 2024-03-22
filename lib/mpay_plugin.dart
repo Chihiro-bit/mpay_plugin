@@ -40,10 +40,10 @@ class MpayPlugin {
   /// 初始化設置，支付寶沙箱模式僅限android使用，
   /// envType 對應mPay的支付模式
   Future<void> init({
-    AliPayEnv envEnum = AliPayEnv.ONLINE,
-    EnvType envType = EnvType.PRODUCTION,
+    AliPayEnv aliPayEnv = AliPayEnv.ONLINE,
+    MPayEnv mPayEnv = MPayEnv.PRODUCTION,
   }) {
-    return MpayPluginPlatform.instance.init(envEnum: envEnum, envType: envType);
+    return MpayPluginPlatform.instance.init(aliPayEnv: aliPayEnv, mPayEnv: mPayEnv);
   }
 
   /// 支付寶支付

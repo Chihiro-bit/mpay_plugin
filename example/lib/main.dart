@@ -45,8 +45,8 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     registerWeChat();
     _mPayPlugin.init(
-      envEnum: AliPayEnv.ONLINE,
-      envType: EnvType.UAT,
+      aliPayEnv: AliPayEnv.ONLINE,
+      mPayEnv: MPayEnv.UAT,
     );
     dio = Dio();
     dio.options.baseUrl = "YOUR_BASER_URI";

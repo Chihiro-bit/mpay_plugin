@@ -12,9 +12,9 @@ extension AliPayEnvExtension on AliPayEnv {
 }
 
 /// 生产环境和UAT环境
-enum EnvType { PRODUCTION, SIT, UAT }
+enum MPayEnv { PRODUCTION, SIT, UAT }
 
-extension EnvTypeExtension on EnvType {
+extension MPayEnvExtension on MPayEnv {
   int get value => [0, 1, 2][index];
 }
 
@@ -53,8 +53,8 @@ abstract class MpayPluginPlatform extends PlatformInterface {
 
   /// 初始化设置(
   Future<void> init({
-    AliPayEnv envEnum = AliPayEnv.ONLINE,
-    EnvType envType = EnvType.PRODUCTION,
+    AliPayEnv aliPayEnv = AliPayEnv.ONLINE,
+    MPayEnv mPayEnv = MPayEnv.PRODUCTION,
   }) {
     throw UnimplementedError('init() has not been implemented.');
   }

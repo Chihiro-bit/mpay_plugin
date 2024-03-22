@@ -117,11 +117,11 @@ class MethodChannelMpayPlugin extends MpayPluginPlatform {
 
   @override
   Future<void> init(
-      {AliPayEnv envEnum = AliPayEnv.ONLINE,
-      EnvType envType = EnvType.PRODUCTION}) async {
+      {AliPayEnv aliPayEnv = AliPayEnv.ONLINE,
+        MPayEnv mPayEnv = MPayEnv.PRODUCTION}) async {
     await methodChannel.invokeMethod<void>('init', {
-      'aliEnv': envEnum.value,
-      'mpyEnv': envType.value,
+      'aliEnv': aliPayEnv.value,
+      'mpyEnv': mPayEnv.value,
     });
   }
 }
