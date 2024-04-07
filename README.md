@@ -89,21 +89,3 @@ sign: 'sign',
 ));
 ```
 > 以上的参数都是需要通过后台获取到数据传入，而不是填写上面的字符串，这里只是为了方便演示，实际使用中需要通过后台获取到数据传入。微信支付ios需要配置url_scheme，universal_link, LSApplicationQueriesSchemes，具体配置请参考微信支付官方文档
-
-### Ios 端特别配置
-
-打开AppDelegate.m文件，添加如下代码
-```objectivec
-#import <OpenSDK/OpenSDK.h>
-#import <MpayPlugin.h>
-```
-> 在application方法中添加 `[[OpenSDK sharedInstance] ProcessOrderWithPaymentResult:url];
-[[MpayPlugin sharedInstance] AliPaymentResult:url];`这一步本可以在插件中处理，但是实际使用发现会出现接收不到消息的情况，或者接收消息速度缓慢，AppDelegate中处理的话就不会出现这种情况，所以这里建议在AppDelegate中处理
-```objectivec
--(BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options{
-    //回调方法，必調
-    [[OpenSDK sharedInstance] ProcessOrderWithPaymentResult:url];
-    [[MpayPlugin sharedInstance] AliPaymentResult:url];
-    return true;
-}
-}
