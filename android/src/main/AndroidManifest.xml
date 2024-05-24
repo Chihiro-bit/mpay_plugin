@@ -1,46 +1,46 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-
-    <!-- Support WeChat query on Android P -->
-    <queries>
-        <package android:name="com.tencent.mm" />
-    </queries>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.chihiro.mpay_plugin">
 
     <application>
-
         <activity
-            android:name=".wxapi.FluwxWXEntryActivity"
-            android:exported="false"
+            android:name=".wxapi.WechatCallbackActivity"
+            android:exported="true"
             android:launchMode="singleTask"
             android:taskAffinity="${applicationId}"
-            android:theme="@style/DisablePreviewTheme" />
+            android:theme="@style/mpay_plugin.Theme.Transparent" />
 
         <activity-alias
             android:name="${applicationId}.wxapi.WXEntryActivity"
             android:exported="true"
-            android:launchMode="singleTop"
-            android:targetActivity="com.chihiro.mpay_plugin.wxapi.FluwxWXEntryActivity"
+            android:launchMode="singleTask"
+            android:targetActivity=".wxapi.WechatCallbackActivity"
             android:taskAffinity="${applicationId}"
-            android:theme="@style/DisablePreviewTheme" />
+            android:theme="@style/mpay_plugin.Theme.Transparent" />
 
+        <!--        <activity-->
+        <!--            android:name="${applicationId}.wxapi.WXEntryActivity"-->
+        <!--            android:theme="@android:style/Theme.Translucent.NoTitleBar"-->
+        <!--            android:exported="true"-->
+        <!--            android:taskAffinity="填写你的包名"-->
+        <!--            android:launchMode="singleTask">-->
+        <!--        </activity>-->
         <activity-alias
             android:name="${applicationId}.wxapi.WXPayEntryActivity"
             android:exported="true"
-            android:launchMode="singleInstance"
-            android:targetActivity="com.chihiro.mpay_plugin.wxapi.FluwxWXEntryActivity"
-            android:theme="@style/DisablePreviewTheme" />
+            android:launchMode="singleTask"
+            android:targetActivity=".wxapi.WechatCallbackActivity"
+            android:taskAffinity="${applicationId}"
+            android:theme="@style/mpay_plugin.Theme.Transparent" />
 
         <provider
-            android:name="com.chihiro.mpay_plugin.FluwxFileProvider"
-            android:authorities="${applicationId}.fluwxprovider"
+            android:name=".WechatFileProvider"
+            android:authorities="${applicationId}.mpay_plugin.WechatFileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
+
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/fluwx_file_provider_paths" />
+                android:resource="@xml/mpay_wechat_file_paths" />
         </provider>
     </application>
 </manifest>

@@ -57,7 +57,8 @@ android {
         testImplementation 'org.mockito:mockito-core:5.0.0'
         api(name: 'alipaySdk-15.7.4-20200228192259', ext: "aar")
         api(name: 'openSdk_v1.0.4_202105281703', ext: "jar")
-        api(name: 'wechat-sdk-android-without-mta-5.5.8', ext: "jar")
+        api(name: 'wechat-sdk-android-6.8.28', ext: "aar")
+//        api(name: 'wechat-sdk-android-without-mta-5.5.8', ext: "jar")
 //        api 'com.tencent.mm.opensdk:wechat-sdk-android:6.8.24'
         api(name: 'gson-2.2.4', ext: "jar")
 //        api(name: 'okhttp-3.10.0', ext: "jar")

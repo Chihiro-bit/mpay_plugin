@@ -4,20 +4,23 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.AsyncTask
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.alipay.sdk.app.EnvUtils
 import com.alipay.sdk.app.PayTask
-import com.chihiro.mpay_plugin.handlers.MPayRequestHandler
-import com.chihiro.mpay_plugin.handlers.WXAPiHandler
+import com.chihiro.mpay_plugin.wxapi.WechatCallbackActivity
 import com.macau.pay.sdk.OpenSdk
 import com.macau.pay.sdk.util.Logger
 import com.tencent.mm.opensdk.modelbase.BaseReq
 import com.tencent.mm.opensdk.modelbase.BaseResp
-import com.tencent.mm.opensdk.modelbiz.WXOpenBusinessWebview
+import com.tencent.mm.opensdk.modelmsg.LaunchFromWX
+import com.tencent.mm.opensdk.modelmsg.ShowMessageFromWX
 import com.tencent.mm.opensdk.modelpay.PayReq
+import com.tencent.mm.opensdk.modelpay.PayResp
 import com.tencent.mm.opensdk.openapi.IWXAPI
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler
-import com.tencent.mm.opensdk.utils.ILog
+import com.tencent.mm.opensdk.openapi.WXAPIFactory
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -27,21 +30,11 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import java.lang.ref.WeakReference
-import com.chihiro.mpay_plugin.utils.readWeChatCallbackIntent
-import com.tencent.mm.opensdk.modelbiz.ChooseCardFromWXCardPackage
-import com.tencent.mm.opensdk.modelbiz.SubscribeMessage
-import com.tencent.mm.opensdk.modelbiz.WXLaunchMiniProgram
-import com.tencent.mm.opensdk.modelbiz.WXOpenBusinessView
-import com.tencent.mm.opensdk.modelmsg.LaunchFromWX
-import com.tencent.mm.opensdk.modelmsg.SendAuth
-import com.tencent.mm.opensdk.modelmsg.SendMessageToWX
-import com.tencent.mm.opensdk.modelmsg.ShowMessageFromWX
-import com.tencent.mm.opensdk.modelpay.PayResp
+import java.util.concurrent.Executors
 
 /** MpayPlugin */
 class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
-    PluginRegistry.NewIntentListener,
-    IWXAPIEventHandler {
+    PluginRegistry.NewIntentListener {
 
     private lateinit var channel: MethodChannel
     private var activityPluginBinding: ActivityPluginBinding? = null
@@ -50,42 +43,24 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     private lateinit var mContext: Context
     private var mActivity: Activity? = null
     private var initializationParams: Map<String, Any>? = null
+    private lateinit var wxapiEventHandler: WXAPIEventHandler
 
     companion object {
         private const val TAG = "MpayPlugin"
-        private val errStr = "errStr"
-        private val errCode = "errCode"
-        private val openId = "openId"
-        private val type = "type"
+        private const val errStr = "errStr"
+        private const val errCode = "errCode"
+        private const val openId = "openId"
+        private const val type = "type"
+
+        //        微信支付 api
+        var iwxapi: IWXAPI? = null
     }
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "mpay_plugin")
         channel.setMethodCallHandler(this)
         mContext = flutterPluginBinding.applicationContext
-    }
-
-    private val weChatLogger = object : ILog {
-
-        override fun d(p0: String?, p1: String?) {
-            logToFlutter(p0, p1)
-        }
-
-        override fun i(p0: String?, p1: String?) {
-            logToFlutter(p0, p1)
-        }
-
-        override fun e(p0: String?, p1: String?) {
-            logToFlutter(p0, p1)
-        }
-
-        override fun v(p0: String?, p1: String?) {
-            logToFlutter(p0, p1)
-        }
-
-        override fun w(p0: String?, p1: String?) {
-            logToFlutter(p0, p1)
-        }
+        wxapiEventHandler = WXAPIEventHandler(channel)
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
@@ -117,8 +92,9 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             }
 
             "registerApp" -> {
-                WXAPiHandler.registerApp(call, result, mActivity)
-                WXAPiHandler.wxApi?.setLogImpl(weChatLogger)
+//                WXAPiHandler.registerApp(call, result, mActivity)
+//                WXAPiHandler.wxApi?.setLogImpl(weChatLogger)
+                registerApp(call, result);
             }
 
             "wechatPay" -> {
@@ -142,6 +118,7 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         mActivity = binding.activity
+        binding.addOnNewIntentListener(this)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -159,27 +136,21 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
      * @param payInfo 支付信息
      * @param callback 支付回調
      */
-    private fun aliPay(activity: Activity?, payInfo: String?, callback: Result) {
-        val activityRef = WeakReference(activity)
-        val mActivity = activityRef.get()
-        val alipay = PayTask(mActivity)
-        try {
-            val result = alipay.payV2(payInfo, true)
-            callback.success(result)
-        } catch (e: Exception) {
-            val result: MutableMap<String?, String?> =
-                HashMap()
-            result["resultStatus"] = "-1"
-            result["result"] = "支付失敗"
-            result["memo"] = e.message
-            result["type"] = "openSDK"
-            callback.success(result)
-        }
-    }
-
     fun pay(currentActivity: Activity?, payInfo: String?, callback: Result) {
-        object : AsyncTask<String?, Any?, Map<String?, String?>>() {
-            override fun onPostExecute(result: Map<String?, String?>) {
+        val executor = Executors.newSingleThreadExecutor()
+        val handler = Handler(Looper.getMainLooper())
+
+        executor.execute {
+            val result: Map<String?, String?> = try {
+                val alipay = PayTask(currentActivity)
+                alipay.payV2(payInfo, true)
+            } catch (e: Exception) {
+                val errorResult: MutableMap<String?, String?> = HashMap()
+                errorResult["\$error"] = e.message
+                errorResult
+            }
+
+            handler.post {
                 val error = result["\$error"]
                 if (error != null) {
                     callback.error(error, "支付发生错误", null)
@@ -187,24 +158,14 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                     callback.success(result)
                 }
             }
+        }
+    }
 
-            override fun doInBackground(vararg params: String?): Map<String?, String?> {
-                return try {
-                    val alipay = PayTask(currentActivity)
-                    alipay.payV2(payInfo, true)
-                } catch (e: Exception) {
-                    val result: MutableMap<String?, String?> =
-                        HashMap()
-                    result["\$error"] = e.message
-                    result
-                }
-            }
-        }.execute()
 
 
 //    Thread payThread = new Thread(payRunnable);
 //    payThread.start();
-    }
+
 
     private fun initializePlugin(params: Map<String, Any>) {
         /// 支付宝环境
@@ -229,85 +190,72 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         initializationParams?.let { initializePlugin(it) }
     }
 
-
-    private fun payWeChat(call: MethodCall, result: Result) {
-
-        if (WXAPiHandler.wxApi == null) {
-            result.error("Unassigned WxApi", "please config wxapi first", null)
-            return
-        } else {
-            // 将该app注册到微信
-            try {
-                val request = PayReq()
-                request.appId = call.argument("appId")
-                request.partnerId = call.argument("partnerId")
-                request.prepayId = call.argument("prepayId")
-                request.packageValue = call.argument("packageValue")
-                request.nonceStr = call.argument("nonceStr")
-                request.timeStamp = call.argument<Long>("timeStamp").toString()
-                request.sign = call.argument("sign")
-                request.signType = call.argument("signType")
-                request.extData = call.argument("extData")
-                Log.d(TAG, "payWeChat: \n" +
-                        "appId: ${request.appId}, \n" +
-                        "partnerId: ${request.partnerId}, \n" +
-                        "prepayId: ${request.prepayId}, " +
-                        "packageValue: ${request.packageValue}, \n" +
-                        "nonceStr: ${request.nonceStr}, \n" +
-                        "timeStamp: ${request.timeStamp}, \n" +
-                        "sign: ${request.sign}, \n" +
-                        "signType: ${request.signType}, \n" +
-                        "extData: ${request.extData}\n"
-                )
-                val done = WXAPiHandler.wxApi?.sendReq(request)
-                result.success(done)
-            } catch (e: Exception) {
-                Log.d(TAG, "payWeChat: ${e}")
-            }
-        }
+    private fun registerApp(call: MethodCall, result: Result) {
+        val appId = call.argument<String>("appId")
+        //        final String universalLink = call.argument("universalLink");
+        iwxapi = WXAPIFactory.createWXAPI(mActivity, appId)
+        iwxapi!!.registerApp(appId)
+        result.success(null)
     }
 
-    private fun logToFlutter(tag: String?, message: String?) {
-        channel.invokeMethod(
-            "wechatLog", mapOf(
-                "detail" to "$tag : $message"
-            )
-        )
+    private fun payWeChat(call: MethodCall, result: Result) {
+        try {
+            val request = PayReq()
+            request.appId = call.argument("appId")
+            request.partnerId = call.argument("partnerId")
+            request.prepayId = call.argument("prepayId")
+            request.packageValue = call.argument("packageValue")
+            request.nonceStr = call.argument("nonceStr")
+            request.timeStamp = call.argument<Long>("timeStamp").toString()
+            request.sign = call.argument("sign")
+            request.signType = call.argument("signType")
+            request.extData = call.argument("extData")
+//            iwxapi!!.sendReq(request)
+            wxapiEventHandler.startPayment(iwxapi!!, request, result)
+        } catch (e: Exception) {
+            Log.d(TAG, "payWeChat: ${e}")
+        }
     }
 
     override fun onNewIntent(intent: Intent): Boolean {
-        return letWeChatHandleIntent(intent)
+        val extra = WechatCallbackActivity.extraCallback(intent)
+        if (iwxapi != null) {
+            Log.d(TAG, "onNewIntent: $extra")
+            Log.d(TAG, "onNewIntent: $iwxapi")
+            iwxapi!!.handleIntent(extra, wxapiEventHandler)
+            return true
+        }
+        return false
     }
 
-    private fun letWeChatHandleIntent(intent: Intent): Boolean =
-        intent.readWeChatCallbackIntent()?.let {
-            WXAPiHandler.wxApi?.handleIntent(it, this) ?: false
-        } ?: run {
-            false
+//    override fun onReq(p0: BaseReq?) {
+//        Log.d(TAG, "onReq1: ${p0?.type}")
+//    }
+//
+//    override fun onResp(p0: BaseResp?) {
+//        Log.d(TAG, "onResp1: ${p0?.type}")
+//    }
+
+    private val iwxapiEventHandler: IWXAPIEventHandler = object : IWXAPIEventHandler {
+        override fun onReq(req: BaseReq) {
+            Log.d(TAG, "onReq2: ${req.type}")
         }
 
-    override fun onReq(req: BaseReq?) {
-
-    }
-
-    override fun onResp(response: BaseResp?) {
-        Log.d(TAG, "onResp: $response")
-        when (response) {
-            is PayResp -> handlePayResp(response)
-            else -> {}
+        override fun onResp(resp: BaseResp) {
+            Log.d(TAG, "onResp2: ${resp}")
         }
     }
-
-    private fun handlePayResp(response: PayResp) {
-        val result = mapOf(
-            "prepayId" to response.prepayId,
-            "returnKey" to response.returnKey,
-            "extData" to response.extData,
-            errStr to response.errStr,
-            type to response.type,
-            errCode to response.errCode
-        )
-        channel.invokeMethod("onPayResponse", result)
-        Log.d(TAG, "handlePayResp: $result")
-    }
+//
+//    private fun handlePayResp(response: PayResp) {
+//        val result = mapOf(
+//            "prepayId" to response.prepayId,
+//            "returnKey" to response.returnKey,
+//            "extData" to response.extData,
+//            errStr to response.errStr,
+//            type to response.type,
+//            errCode to response.errCode
+//        )
+//        channel.invokeMethod("onPayResponse", result)
+//        Log.d(TAG, "handlePayResp: $result")
+//    }
 }
