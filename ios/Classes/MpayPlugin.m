@@ -6,8 +6,8 @@
 #import "WechatAuthSDK.h"
 #import "WeChatStringUtil.h"
 #import "public/WeChatPayDelegateHeader.h"
-
-@interface MpayPlugin() <WXApiDelegate, WechatAuthAPIDelegate>
+#import "WXAPIEventHandler.h"
+@interface MpayPlugin()
 
 @property (strong,nonatomic)NSString *extMsg;
 
@@ -41,6 +41,7 @@ BOOL handleOpenURLByFluwx = YES;
 
 + (instancetype)sharedInstance {
     static MpayPlugin *sharedInstance = nil;
+    
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[MpayPlugin alloc] init];
@@ -50,11 +51,14 @@ BOOL handleOpenURLByFluwx = YES;
 
 MPayHandler *payHandler;
 
+WXAPIEventHandler *_wxApiEventHandler;
+
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     FlutterMethodChannel* channel = [FlutterMethodChannel
                                      methodChannelWithName:@"mpay_plugin"
                                      binaryMessenger:[registrar messenger]];
     MpayPlugin* instance = [[MpayPlugin alloc] init:channel];
+    _wxApiEventHandler = [[WXAPIEventHandler alloc] initWithChannel:channel];
     payHandler = [[MPayHandler alloc] init];
     [registrar addApplicationDelegate:instance];
     [registrar addMethodCallDelegate:instance channel:channel];
@@ -204,10 +208,10 @@ MPayHandler *payHandler;
     req.timeStamp = timeStamp;
     req.package = packageValue;
     req.sign = sign;
-    
-    [WXApi sendReq:req completion:^(BOOL done) {
-        result(@(done));
-    }];
+    [_wxApiEventHandler startPaymentWithAPI:[WXApi class] payReq:req result:result];
+//    [WXApi sendReq:req completion:^(BOOL done) {
+//        result(@(done));
+//    }];
     
 }
 //    WeChatPay HongKongœ
@@ -270,7 +274,7 @@ MPayHandler *payHandler;
     if (handleOpenURLByFluwx) {
         NSString *aURLString = [aNotification userInfo][@"url"];
         NSURL *aURL = [NSURL URLWithString:aURLString];
-        return [WXApi handleOpenURL:aURL delegate:self];
+        return [WXApi handleOpenURL:aURL delegate:_wxApiEventHandler];
     } else {
         return NO;
     }
@@ -285,7 +289,7 @@ MPayHandler *payHandler;
     NSLog(@"application----options",url.path);
     if (_isRunning) {
         // 注册--直接处理WXApi打开的url请求
-        return [WXApi handleOpenURL:url delegate:self];
+        return [WXApi handleOpenURL:url delegate:_wxApiEventHandler];
     }else {
         // 未注册 -- 缓存打开 url 请求并在 WXApi 注册后处理它
         __weak typeof(self) weakSelf = self;
@@ -299,7 +303,7 @@ MPayHandler *payHandler;
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
     // Since flutter has minimum iOS version requirement of 11.0, we don't need to change the implementation here.
-    return [WXApi handleOpenURL:url delegate:self];
+    return [WXApi handleOpenURL:url delegate:_wxApiEventHandler];
 }
 
 //- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
@@ -323,267 +327,13 @@ MPayHandler *payHandler;
 - (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray * _Nonnull))restorationHandler{
     //TODO：（如果需要）缓存 userActivity 并在 WXApi 注册后处理它
     NSLog(@"application----restorationHandler",@"111");
-    return [WXApi handleOpenUniversalLink:userActivity delegate:self];
+    return [WXApi handleOpenUniversalLink:userActivity delegate:_wxApiEventHandler];
 }
 
 - (void)scene:(UIScene *)scene continueUserActivity:(NSUserActivity *)userActivity  API_AVAILABLE(ios(13.0)){
     
     NSLog(@"application----scene",@"111");
-    [WXApi handleOpenUniversalLink:userActivity delegate:self];
+    [WXApi handleOpenUniversalLink:userActivity delegate:_wxApiEventHandler];
 }
-
-- (void)onReq:(BaseReq *)req {
-    
-    NSLog(@"onReq---->%@",@"OnReq調用了");
-    if ([req isKindOfClass:[GetMessageFromWXReq class]]) {
-        
-    } else if ([req isKindOfClass:[ShowMessageFromWXReq class]]) {
-        // ShowMessageFromWXReq -- android spec
-        ShowMessageFromWXReq *showMessageFromWXReq = (ShowMessageFromWXReq *) req;
-        WXMediaMessage *wmm = showMessageFromWXReq.message;
-        
-        NSMutableDictionary *result = [NSMutableDictionary dictionary];
-        [result setValue:wmm.messageAction forKey:@"messageAction"];
-        [result setValue:wmm.messageExt forKey:@"extMsg"];
-        [result setValue:showMessageFromWXReq.lang forKey:@"lang"];
-        [result setValue:showMessageFromWXReq.country forKey:@"country"];
-        
-        // Cache extMsg for later use (by calling 'getExtMsg')
-        [WeChatPayDelegateHeader defaultManager].extMsg= wmm.messageExt;
-        
-        if (_isRunning) {
-            [_channel invokeMethod:@"onWXShowMessageFromWX" arguments:result];
-        } else {
-            __weak typeof(self) weakSelf = self;
-            _attemptToResumeMsgFromWxRunnable = ^() {
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                [strongSelf->_channel invokeMethod:@"onWXShowMessageFromWX" arguments:result];
-            };
-        }
-        
-    } else if ([req isKindOfClass:[LaunchFromWXReq class]]) {
-        // ShowMessageFromWXReq -- ios spec
-        LaunchFromWXReq *launchFromWXReq = (LaunchFromWXReq *) req;
-        WXMediaMessage *wmm = launchFromWXReq.message;
-        
-        NSMutableDictionary *result = [NSMutableDictionary dictionary];
-        [result setValue:wmm.messageAction forKey:@"messageAction"];
-        [result setValue:wmm.messageExt forKey:@"extMsg"];
-        [result setValue:launchFromWXReq.lang forKey:@"lang"];
-        [result setValue:launchFromWXReq.country forKey:@"country"];
-        
-        // Cache extMsg for later use (by calling 'getExtMsg')
-        [WeChatPayDelegateHeader defaultManager].extMsg= wmm.messageExt;
-        
-        if (_isRunning) {
-            [_channel invokeMethod:@"onWXLaunchFromWX" arguments:result];
-        } else {
-            __weak typeof(self) weakSelf = self;
-            _attemptToResumeMsgFromWxRunnable = ^() {
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                [strongSelf->_channel invokeMethod:@"onWXLaunchFromWX" arguments:result];
-            };
-        }
-    }
-}
-
-- (void)onResp:(BaseResp *)resp {
-    NSLog(@"onResp--->%@",@"onResp調用了");
-    if ([resp isKindOfClass:[SendMessageToWXResp class]]) {
-        
-        SendMessageToWXResp *messageResp = (SendMessageToWXResp *) resp;
-        
-        
-        NSDictionary *result = @{
-            description: messageResp.description == nil ? @"" : messageResp.description,
-            errStr: messageResp.errStr == nil ? @"" : messageResp.errStr,
-            errCode: @(messageResp.errCode),
-            fluwxType: @(messageResp.type),
-            country: messageResp.country == nil ? @"" : messageResp.country,
-            lang: messageResp.lang == nil ? @"" : messageResp.lang};
-        if(_channel != nil){
-            [_channel invokeMethod:@"onShareResponse" arguments:result];
-        }
-        
-        
-    } else if ([resp isKindOfClass:[SendAuthResp class]]) {
-        
-        SendAuthResp *authResp = (SendAuthResp *) resp;
-        NSDictionary *result = @{
-            description: authResp.description == nil ? @"" : authResp.description,
-            errStr: authResp.errStr == nil ? @"" : authResp.errStr,
-            errCode: @(authResp.errCode),
-            fluwxType: @(authResp.type),
-            country: authResp.country == nil ? @"" : authResp.country,
-            lang: authResp.lang == nil ? @"" : authResp.lang,
-            @"code": [WeChatStringUtil nilToEmpty:authResp.code],
-            @"state": [WeChatStringUtil nilToEmpty:authResp.state]
-            
-        };
-        
-        if(_channel != nil){
-            [_channel invokeMethod:@"onAuthResponse" arguments:result];
-        }
-        
-    } else if ([resp isKindOfClass:[AddCardToWXCardPackageResp class]]) {
-        
-    } else if ([resp isKindOfClass:[WXChooseCardResp class]]) {
-        
-    } else if ([resp isKindOfClass:[WXChooseInvoiceResp class]]) {
-        //TODO 处理发票返回，并回调Dart
-        
-        WXChooseInvoiceResp *chooseInvoiceResp = (WXChooseInvoiceResp *) resp;
-        
-        
-        NSArray *array =  chooseInvoiceResp.cardAry;
-        
-        NSMutableArray *mutableArray = [NSMutableArray arrayWithCapacity:array.count];
-        
-        
-        for (int i = 0; i< array.count; i++) {
-            WXInvoiceItem *item =  array[i];
-            
-            
-            NSDictionary *dict = @{@"app_id":item.appID, @"encrypt_code":item.encryptCode, @"card_id":item.cardId};
-            [mutableArray addObject:dict];
-        }
-        
-        NSError *error = nil;
-        
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:mutableArray options:NSJSONWritingPrettyPrinted error: &error];
-        
-        NSString *cardItemList = @"";
-        
-        if ([jsonData length] && error == nil) {
-            cardItemList = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-        }
-        
-        NSDictionary *result = @{
-            description: chooseInvoiceResp.description == nil ? @"" : chooseInvoiceResp.description,
-            errStr: chooseInvoiceResp.errStr == nil ? @"" : chooseInvoiceResp.errStr,
-            errCode: @(chooseInvoiceResp.errCode),
-            fluwxType: @(chooseInvoiceResp.type),
-            @"cardItemList":cardItemList
-        };
-        
-        if(_channel != nil){
-            
-            [_channel invokeMethod:@"onOpenWechatInvoiceResponse" arguments:result];
-            
-        }
-    } else if ([resp isKindOfClass:[WXSubscribeMsgResp class]]) {
-        
-        WXSubscribeMsgResp *subscribeMsgResp = (WXSubscribeMsgResp *) resp;
-        NSMutableDictionary *result = [NSMutableDictionary dictionary];
-        NSString *openid = subscribeMsgResp.openId;
-        if(openid != nil && openid != NULL && ![openid isKindOfClass:[NSNull class]]){
-            result[@"openid"] = openid;
-        }
-        
-        NSString *templateId = subscribeMsgResp.templateId;
-        if(templateId != nil && templateId != NULL && ![templateId isKindOfClass:[NSNull class]]){
-            result[@"templateId"] = templateId;
-        }
-        
-        NSString *action = subscribeMsgResp.action;
-        if(action != nil && action != NULL && ![action isKindOfClass:[NSNull class]]){
-            result[@"action"] = action;
-        }
-        
-        NSString *reserved = subscribeMsgResp.action;
-        if(reserved != nil && reserved != NULL && ![reserved isKindOfClass:[NSNull class]]){
-            result[@"reserved"] = reserved;
-        }
-        
-        UInt32 scene = subscribeMsgResp.scene;
-        result[@"scene"] = @(scene);
-        if(_channel != nil){
-            [_channel invokeMethod:@"onSubscribeMsgResp" arguments:result];
-        }
-        
-    } else if ([resp isKindOfClass:[WXLaunchMiniProgramResp class]]) {
-        
-        WXLaunchMiniProgramResp *miniProgramResp = (WXLaunchMiniProgramResp *) resp;
-        
-        
-        NSDictionary *commonResult = @{
-            description: miniProgramResp.description == nil ? @"" : miniProgramResp.description,
-            errStr: miniProgramResp.errStr == nil ? @"" : miniProgramResp.errStr,
-            errCode: @(miniProgramResp.errCode),
-            fluwxType: @(miniProgramResp.type),
-        };
-        
-        NSMutableDictionary *result = [NSMutableDictionary dictionaryWithDictionary:commonResult];
-        if (miniProgramResp.extMsg != nil) {
-            result[@"extMsg"] = miniProgramResp.extMsg;
-        }
-        
-        
-        //        @"extMsg":miniProgramResp.extMsg == nil?@"":miniProgramResp.extMsg
-        
-        if(_channel != nil){
-            [_channel invokeMethod:@"onLaunchMiniProgramResponse" arguments:result];
-            
-        }
-        
-    } else if ([resp isKindOfClass:[WXInvoiceAuthInsertResp class]]) {
-        
-    } else if ([resp isKindOfClass:[WXOpenBusinessWebViewResp class]]) {
-        WXOpenBusinessWebViewResp *businessResp = (WXOpenBusinessWebViewResp *) resp;
-        
-        NSDictionary *result = @{
-            description: [WeChatStringUtil nilToEmpty:businessResp.description],
-            errStr: [WeChatStringUtil nilToEmpty:resp.errStr],
-            errCode: @(businessResp.errCode),
-            fluwxType: @(businessResp.type),
-            @"resultInfo": [WeChatStringUtil nilToEmpty:businessResp.result],
-            @"businessType": @(businessResp.businessType),
-        };
-        if(_channel != nil){
-            [_channel invokeMethod:@"onWXOpenBusinessWebviewResponse" arguments:result];
-        }
-        
-    }else if ([resp isKindOfClass:[WXOpenBusinessViewResp class]])
-    {
-        
-        WXOpenBusinessViewResp *openBusinessViewResp = (WXOpenBusinessViewResp *) resp;
-        NSDictionary *result = @{
-            description: [WeChatStringUtil nilToEmpty:openBusinessViewResp.description],
-            errStr: [WeChatStringUtil nilToEmpty:resp.errStr],
-            errCode: @(openBusinessViewResp.errCode),
-            @"businessType":openBusinessViewResp.businessType,
-            fluwxType: @(openBusinessViewResp.type),
-            @"extMsg":[WeChatStringUtil nilToEmpty:openBusinessViewResp.extMsg]
-        };
-        if(_channel != nil){
-            [_channel invokeMethod:@"onOpenBusinessViewResponse" arguments:result];
-        }
-        
-        // 相关错误信息
-    }
-    else if ([resp isKindOfClass:[WXPayInsuranceResp class]]) {
-        
-    } else if ([resp isKindOfClass:[PayResp class]]) {
-        
-        PayResp *payResp = (PayResp *) resp;
-        
-        NSDictionary *result = @{
-            description: [WeChatStringUtil nilToEmpty:payResp.description],
-            errStr: [WeChatStringUtil nilToEmpty:resp.errStr],
-            errCode: @(payResp.errCode),
-            fluwxType: @(payResp.type),
-            @"extData": [WeChatStringUtil nilToEmpty:[WeChatPayDelegateHeader defaultManager].extData],
-            @"returnKey": [WeChatStringUtil nilToEmpty:payResp.returnKey],
-        };
-        [WeChatPayDelegateHeader defaultManager].extData = nil;
-        if(_channel != nil){
-            [_channel invokeMethod:@"onPayResponse" arguments:result];
-        }
-    } else if ([resp isKindOfClass:[WXNontaxPayResp class]]) {
-        
-    }
-}
-
-
 
 @end
