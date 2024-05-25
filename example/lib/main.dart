@@ -28,7 +28,7 @@ class _MyAppState extends State<MyApp> {
   String payInfo =
       """_input_charset=\"UTF-8\"&body=\"Product\"&currency=\"HKD\"&forex_biz=\"FP\"&it_b_pay=\"179m\"&notify_url=\"https://api.yedpay.com/notify/alipay-online\"&out_trade_no=\"169034360430235\"&partner=\"2088721929663896\"&payment_type=\"1\"&product_code=\"NEW_WAP_OVERSEAS_SELLER\"&return_url=\"https://api.yedpay.com/alipay-online\"&secondary_merchant_id=\"2NMJVPOMGD3YO70RL8\"&secondary_merchant_industry=\"7538\"&secondary_merchant_name=\"TTECH Global Service Limited\"&seller_id=\"2088721929663896\"&service=\"mobile.securitypay.pay\"&sign=\"bKSHYm91pFmKAD%2FCTr5K0B9%2F2dHHuykSkcVP9WJIpBlxthz5LkAwkqkRENFrKgOfd3JNSlth3KdkbZ9EB9aWpTm1zuGMJ2wwgljoi2jsUNao5y3AbkZfBQ1vgD8KT6UdHmPq%2BckZUoqNqr4MjN4bVNYAb4xXBGVw9Xh%2B%2Bch6AUjmKqXt3R8qk4NG4w9xgsDgItFxdiOeNPoBkbSc19FwwCqrEwwQ%2BEHyTTfgSk3UJ9yl3R2JL1r%2Fi2nNDOLFuXGzExOQPipr6KtKjQ1rS5oF3KAkaCIpLugNT4LfkSMS3gf0ohBOcr%2BA%2FBDFVG3u4xOHD84yUxmHMDJNuupOLyF8%2BA%3D%3D\"&sign_type=\"RSA\"&subject=\"Product\"&total_fee=\"0.20\"""";
 
-  late Function(WeChatResponse) responseListener;
+  // late Function(WeChatResponse) responseListener;
 
   Future<void> registerWeChat() async {
     var aa = await _mPayPlugin.registerApi(
@@ -75,12 +75,12 @@ class _MyAppState extends State<MyApp> {
       ),
     );
 
-    responseListener = (response) {
-      if (response is WeChatPaymentResponse) {
-        Logger().i(response.isSuccessful);
-      }
-    };
-    _mPayPlugin.addSubscriber(responseListener);
+    // responseListener = (response) {
+    //   if (response is WeChatPaymentResponse) {
+    //     Logger().i(response.isSuccessful);
+    //   }
+    // };
+    // _mPayPlugin.addSubscriber(responseListener);
   }
 
   Future<void> pay(String type) async {

@@ -236,15 +236,15 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
 //        Log.d(TAG, "onResp1: ${p0?.type}")
 //    }
 
-    private val iwxapiEventHandler: IWXAPIEventHandler = object : IWXAPIEventHandler {
-        override fun onReq(req: BaseReq) {
-            Log.d(TAG, "onReq2: ${req.type}")
-        }
-
-        override fun onResp(resp: BaseResp) {
-            Log.d(TAG, "onResp2: ${resp}")
-        }
-    }
+//    private val iwxapiEventHandler: IWXAPIEventHandler = object : IWXAPIEventHandler {
+//        override fun onReq(req: BaseReq) {
+//            Log.d(TAG, "onReq2: ${req.type}")
+//        }
+//
+//        override fun onResp(resp: BaseResp) {
+//            Log.d(TAG, "onResp2: ${resp}")
+//        }
+//    }
 //
 //    private fun handlePayResp(response: PayResp) {
 //        val result = mapOf(

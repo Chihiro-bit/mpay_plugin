@@ -79,8 +79,8 @@ abstract class MpayPluginPlatform extends PlatformInterface {
     throw UnimplementedError('wechatPay() has not been implemented.');
   }
 
-  Stream<WeChatResponse> get responseEventHandler {
-    throw UnimplementedError('responseEventHandler has not been implemented.');
-  }
+  // Stream<WeChatResponse> get responseEventHandler {
+  //   throw UnimplementedError('responseEventHandler has not been implemented.');
+  // }
 
 }
