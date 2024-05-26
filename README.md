@@ -62,5 +62,5 @@ var result = await _mPayPlugin.aliPay("pay info", "ios scheme");
 
 ```dart
 PayType payType = PayType();
-var result = await _mPayPlugin.MpayPluginPlatform(payType);
+var result = await _mPayPlugin.wechatPay(payType);
 ```
