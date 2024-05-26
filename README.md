@@ -29,5 +29,32 @@ void initState() {
     envEnum: AliPayEnv.ONLINE,
     envType: EnvType.UAT,
   );
+
+  _mPayPlugin.registerApi(
+    appId: 'your app id',
+    doOnIOS: true,
+    doOnIOS: true,
+    universalLink: 'your universal link',
+  );
 }
+```
+
+### 任何支付回调都可以用await来接收，native端的数据都会通过result返回，不需要使用监听器来接收支付结果
+
+### 支付 - Mpay
+```dart
+  PayChannel payChannel = PayChannel.mpay
+  var result = await _mPayPlugin.pay("pay info", payChannel,withScheme:"iOS scheme");
+```
+
+### 支付 - AliPay
+```dart
+  PayChannel payChannel = PayChannel.aliPay;
+  var result = await_mPayPlugin.aliPay("pay info","ios scheme");
+```
+
+### 支付 - WeChat
+```dart
+  PayType payType = PayType();
+  var result = await_mPayPlugin.MpayPluginPlatform(payType);
 ```
