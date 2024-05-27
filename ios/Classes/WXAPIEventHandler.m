@@ -1,6 +1,7 @@
 #import "MpayPlugin.h"
 #import <Foundation/Foundation.h>
 #import "WXAPIEventHandler.h"
+#import "public/WeChatPayDelegateHeader.h"
 
 @interface WXAPIEventHandler()
 @property (nonatomic, strong) FlutterMethodChannel *channel;
