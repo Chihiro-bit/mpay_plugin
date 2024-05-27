@@ -1,4 +1,4 @@
-import 'package:mpay_plugin/response/wechat_response.dart';
+// import 'package:mpay_plugin/response/wechat_response.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'arguments.dart';
@@ -75,7 +75,7 @@ abstract class MpayPluginPlatform extends PlatformInterface {
   }
 
   /// 微信支付
-  Future<bool> wechatPay(PayType which) {
+  Future<Map> wechatPay(PayType which) {
     throw UnimplementedError('wechatPay() has not been implemented.');
   }
 

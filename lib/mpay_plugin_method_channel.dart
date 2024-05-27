@@ -4,14 +4,14 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mpay_plugin/arguments.dart';
-import 'package:mpay_plugin/response/wechat_response.dart';
+// import 'package:mpay_plugin/response/wechat_response.dart';
 
 import 'mpay_plugin_platform_interface.dart';
 
 /// An implementation of [MpayPluginPlatform] that uses method channels.
 class MethodChannelMpayPlugin extends MpayPluginPlatform {
-
-  // final StreamController<WeChatResponse> _responseEventHandler = StreamController.broadcast();
+  // final StreamController<WeChatResponse> _responseEventHandler =
+  //     StreamController.broadcast();
 
   @visibleForTesting
   final methodChannel = const MethodChannel('mpay_plugin');
@@ -19,7 +19,7 @@ class MethodChannelMpayPlugin extends MpayPluginPlatform {
   // MethodChannelMpayPlugin() {
   //   methodChannel.setMethodCallHandler(_methodHandler);
   // }
-
+  //
   // @override
   // Stream<WeChatResponse> get responseEventHandler =>
   //     _responseEventHandler.stream;
@@ -45,9 +45,9 @@ class MethodChannelMpayPlugin extends MpayPluginPlatform {
   //   return Future.value();
   // }
 
-  _printLog(Map data) {
-    debugPrint("FluwxLog: ${data["detail"]}");
-  }
+  // _printLog(Map data) {
+  //   debugPrint("FluwxLog: ${data["detail"]}");
+  // }
 
   @override
   Future<Map> mPay(
@@ -64,9 +64,9 @@ class MethodChannelMpayPlugin extends MpayPluginPlatform {
   }
 
   @override
-  Future<Map> aliPay(String payInfo, String setIosUrlSchema) async {
+  Future<Map> aliPay(String data, String setIosUrlSchema) async {
     var response = await methodChannel.invokeMethod<dynamic>('aliPay', {
-      "payInfo": payInfo,
+      "payInfo": data,
       "setIosUrlSchema": setIosUrlSchema,
     });
     return response;
@@ -86,8 +86,8 @@ class MethodChannelMpayPlugin extends MpayPluginPlatform {
         throw ArgumentError.value(
           universalLink,
           "You're trying to use illegal universal link, see "
-              'https://developers.weixin.qq.com/doc/oplatform/Mobile_App/Access_Guide/iOS.html '
-              'for more detail',
+          'https://developers.weixin.qq.com/doc/oplatform/Mobile_App/Access_Guide/iOS.html '
+          'for more detail',
         );
       }
     }
@@ -99,18 +99,17 @@ class MethodChannelMpayPlugin extends MpayPluginPlatform {
     });
   }
 
-
   @override
-  Future<bool> wechatPay(PayType which) async {
+  Future<Map> wechatPay(PayType which) async {
     // var response = await methodChannel
     //     .invokeMethod<dynamic>('', {"payInfo": payInfo});
     // return response;
     switch (which) {
       case Payment():
-        return await methodChannel.invokeMethod(
+        return await methodChannel.invokeMethod<dynamic>(
             'wechatPay', which.arguments);
       case HongKongWallet():
-        return await methodChannel.invokeMethod(
+        return await methodChannel.invokeMethod<dynamic>(
             'wechatPayHongKongWallet', which.arguments);
     }
   }
@@ -118,7 +117,7 @@ class MethodChannelMpayPlugin extends MpayPluginPlatform {
   @override
   Future<void> init(
       {AliPayEnv aliPayEnv = AliPayEnv.ONLINE,
-        MPayEnv mPayEnv = MPayEnv.PRODUCTION}) async {
+      MPayEnv mPayEnv = MPayEnv.PRODUCTION}) async {
     await methodChannel.invokeMethod<void>('init', {
       'aliEnv': aliPayEnv.value,
       'mpyEnv': mPayEnv.value,
