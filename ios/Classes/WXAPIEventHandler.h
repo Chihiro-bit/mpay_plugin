@@ -4,7 +4,6 @@
 #import "WXApiObject.h"
 #import "WechatAuthSDK.h"
 #import "WeChatStringUtil.h"
-#import "public/WeChatPayDelegateHeader.h"
 
 @interface WXAPIEventHandler : NSObject <WXApiDelegate, WechatAuthAPIDelegate>
 @property NSMutableString *payChannel;
