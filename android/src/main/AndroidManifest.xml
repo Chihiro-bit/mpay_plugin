@@ -17,13 +17,13 @@
             android:taskAffinity="${applicationId}"
             android:theme="@style/mpay_plugin.Theme.Transparent" />
 
-        <!--        <activity-->
-        <!--            android:name="${applicationId}.wxapi.WXEntryActivity"-->
-        <!--            android:theme="@android:style/Theme.Translucent.NoTitleBar"-->
-        <!--            android:exported="true"-->
-        <!--            android:taskAffinity="填写你的包名"-->
-        <!--            android:launchMode="singleTask">-->
-        <!--        </activity>-->
+<!--        <activity-->
+<!--            android:name="${applicationId}.wxapi.WXEntryActivity"-->
+<!--            android:theme="@android:style/Theme.Translucent.NoTitleBar"-->
+<!--            android:exported="true"-->
+<!--            android:taskAffinity="填写你的包名"-->
+<!--            android:launchMode="singleTask">-->
+<!--        </activity>-->
         <activity-alias
             android:name="${applicationId}.wxapi.WXPayEntryActivity"
             android:exported="true"
