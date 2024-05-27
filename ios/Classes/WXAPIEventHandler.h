@@ -5,9 +5,12 @@
 #import "WechatAuthSDK.h"
 #import "WeChatStringUtil.h"
 
-@interface WXAPIEventHandler : NSObject <WXApiDelegate, WechatAuthAPIDelegate>
-@property NSMutableString *payChannel;
+
+@interface WXAPIEventHandler : NSObject
+
 - (instancetype)initWithChannel:(FlutterMethodChannel *)channel;
-- (void)startPaymentWithAPI:(WXApi *)api payReq:(FlutterMethodCall *)call result:(FlutterResult)result;
+- (void)startPaymentWithPayReq:(FlutterMethodCall *)call result:(FlutterResult)result;
+- (void)onReq:(BaseReq *)req;
+- (void)onResp:(BaseResp *)resp;
 
 @end

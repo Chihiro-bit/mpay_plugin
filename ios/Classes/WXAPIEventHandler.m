@@ -10,7 +10,6 @@
 
 @implementation WXAPIEventHandler
 
-
 - (instancetype)initWithChannel:(FlutterMethodChannel *)channel {
     self = [super init];
     if (self) {
@@ -19,7 +18,7 @@
     return self;
 }
 
-- (void)startPaymentWithAPI:(WXApi *)api payReq:(FlutterMethodCall *)call result:(FlutterResult)result {
+- (void)startPaymentWithPayReq:(FlutterMethodCall *)call result:(FlutterResult)result {
     self.result = result;
     NSNumber *timestamp = call.arguments[@"timeStamp"];
     
@@ -48,12 +47,10 @@
             result([FlutterError errorWithCode:@"PAYMENT_ERROR" message:@"Failed to send payment request" details:nil]);
         }
     }];
-    
 }
 
 - (void)onReq:(BaseReq *)req {
     NSLog(@"onReq---->%@",@"OnReq調用了");
-
 }
 
 - (void)onResp:(BaseResp *)resp {

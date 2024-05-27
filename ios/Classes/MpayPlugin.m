@@ -7,7 +7,8 @@
 #import "WeChatStringUtil.h"
 #import "public/WeChatPayDelegateHeader.h"
 #import "WXAPIEventHandler.h"
-@interface MpayPlugin()
+
+@interface MpayPlugin() <WXApiDelegate, WechatAuthAPIDelegate>
 
 @property (strong,nonatomic)NSString *extMsg;
 
@@ -41,7 +42,6 @@ BOOL handleOpenURLByFluwx = YES;
 
 + (instancetype)sharedInstance {
     static MpayPlugin *sharedInstance = nil;
-    
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[MpayPlugin alloc] init];
@@ -50,19 +50,19 @@ BOOL handleOpenURLByFluwx = YES;
 }
 
 MPayHandler *payHandler;
-
-WXAPIEventHandler *_wxApiEventHandler;
+WXAPIEventHandler *wxEventHandler;
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     FlutterMethodChannel* channel = [FlutterMethodChannel
                                      methodChannelWithName:@"mpay_plugin"
                                      binaryMessenger:[registrar messenger]];
     MpayPlugin* instance = [[MpayPlugin alloc] init:channel];
-    _wxApiEventHandler = [[WXAPIEventHandler alloc] initWithChannel:channel];
     payHandler = [[MPayHandler alloc] init];
+    wxEventHandler = [[WXAPIEventHandler alloc] initWithChannel:channel];
     [registrar addApplicationDelegate:instance];
     [registrar addMethodCallDelegate:instance channel:channel];
 }
+
 - (instancetype)init:(FlutterMethodChannel *)channel {
     self = [super init];
     if (self) {
@@ -98,7 +98,7 @@ WXAPIEventHandler *_wxApiEventHandler;
         [payHandler processFlutterResult:result];
         [self pay:arguments[@"payInfo"] urlScheme:arguments[@"setIosUrlSchema"]];
     }else if([@"wechatPay" isEqualToString:call.method]){
-        [self wechatPay:call result:result];
+        [wxEventHandler startPaymentWithPayReq:call result:result];
     }else if([@"wechatPayHongKongWallet" isEqualToString:call.method]){
         [self wechatPayHongKongWallet:call result:result];
     }else if ([@"registerApp" isEqualToString:call.method]) {
@@ -120,6 +120,7 @@ WXAPIEventHandler *_wxApiEventHandler;
         [[OpenSDK sharedInstance] setEnvironmentType:MPay_UAT];
     }
 }
+
 // AliPay
 -(void)pay:(NSString*)payInfo urlScheme:(NSString*)urlScheme{
     NSLog(@"urlScheme--->>%@",urlScheme);
@@ -141,6 +142,7 @@ WXAPIEventHandler *_wxApiEventHandler;
         [_channel invokeMethod:@"wechatLog" arguments:result];
     }
 }
+
 - (void)registerApp:(FlutterMethodCall *)call result:(FlutterResult)result {
     NSNumber* doOnIOS =call.arguments[@"iOS"];
     
@@ -176,45 +178,11 @@ WXAPIEventHandler *_wxApiEventHandler;
         _cachedOpenUrlRequest = nil;
     }
     
-    // 在调用 `_cachedOpenUrlRequest` 之后设置 `_isRunning` 以确保
-    // 由调用 `_cachedOpenUrlRequest` 触发的 `onReq` 将
-    // 存储在可获取的`_attemptToResumeMsgFromWxRunnable`中
-    // 通过触发 `attemptToResumeMsgFromWx`。
-    // 同时这也和Android端的做法不谋而合：
-    // 冷启动事件被缓存并通过 `attemptToResumeMsgFromWx` 触发
     _isRunning = isWeChatRegistered;
-    
     result(@(isWeChatRegistered));
 }
 
-// WechatPay
--(void)wechatPay:(FlutterMethodCall *)call result:(FlutterResult)result {
-    NSNumber *timestamp = call.arguments[@"timeStamp"];
-    
-    NSString *partnerId = call.arguments[@"partnerId"];
-    NSString *prepayId = call.arguments[@"prepayId"];
-    NSString *packageValue = call.arguments[@"packageValue"];
-    NSString *nonceStr = call.arguments[@"nonceStr"];
-    UInt32 timeStamp = [timestamp unsignedIntValue];
-    NSString *sign = call.arguments[@"sign"];
-    [WeChatPayDelegateHeader defaultManager].extData = call.arguments[@"extData"];
-    
-    NSString * appId = call.arguments[@"appId"];
-    PayReq *req = [[PayReq alloc] init];
-    req.openID = (appId == (id) [NSNull null]) ? nil : appId;
-    req.partnerId = partnerId;
-    req.prepayId = prepayId;
-    req.nonceStr = nonceStr;
-    req.timeStamp = timeStamp;
-    req.package = packageValue;
-    req.sign = sign;
-    [_wxApiEventHandler startPaymentWithAPI:[WXApi class] payReq:req result:result];
-//    [WXApi sendReq:req completion:^(BOOL done) {
-//        result(@(done));
-//    }];
-    
-}
-//    WeChatPay HongKongœ
+// WechatPay HongKong
 - (void)wechatPayHongKongWallet:(FlutterMethodCall *)call result:(FlutterResult)result {
     NSString *partnerId = call.arguments[@"prepayId"];
     
@@ -226,45 +194,35 @@ WXAPIEventHandler *_wxApiEventHandler;
     [WXApi sendReq:req completion:^(BOOL done) {
         result(@(done));
     }];
-    
 }
-
 
 -(void)onGetResult:(NSDictionary*)resultDic{
     NSLog(@"AliPaymentResult---->%@",self.callback);
-    //    if(self.callback!=nil){
     NSMutableDictionary *map = [NSMutableDictionary dictionary];
     NSString *resultStatus = [resultDic objectForKey:@"resultStatus"];
     NSString *memo = [resultDic objectForKey:@"memo"];
     NSString *result = [resultDic objectForKey:@"result"];
     
-    // 向map中添加键值对
     [map setObject:resultStatus forKey:@"resultStatus"];
     [map setObject:result forKey:@"result"];
     [map setObject:memo forKey:@"memo"];
     [map setObject:@"AliPay" forKey:@"type"];
-    //        self.callback(map);
-    //        self.callback = nil;
     [payHandler processMapValue:map];
-    //    }
-    
 }
--(void)AliPaymentResult:(NSURL *)url /*aNotification:(NSNotification *)aNotification*/ {
+
+-(void)AliPaymentResult:(NSURL *)url {
     NSLog(@"AliPaymentResult---->%@",url);
     [self handleOpenURL:url];
 }
 
-
 -(BOOL)handleOpenURL:(NSURL*)url{
     if ([url.host isEqualToString:@"safepay"]) {
         NSLog(@"safepay%@",url);
-        // 支付跳转支付宝钱包进行支付，处理支付结果
         [[AlipaySDK defaultService] processOrderWithPaymentResult:url
                                                   standbyCallback:^(NSDictionary *resultDic) {
             NSLog(@"支付結果%@",resultDic);
             [self onGetResult:resultDic];
         }];
-        
         return YES;
     }
     return NO;
@@ -274,7 +232,7 @@ WXAPIEventHandler *_wxApiEventHandler;
     if (handleOpenURLByFluwx) {
         NSString *aURLString = [aNotification userInfo][@"url"];
         NSURL *aURL = [NSURL URLWithString:aURLString];
-        return [WXApi handleOpenURL:aURL delegate:_wxApiEventHandler];
+        return [WXApi handleOpenURL:aURL delegate:self];
     } else {
         return NO;
     }
@@ -284,14 +242,9 @@ WXAPIEventHandler *_wxApiEventHandler;
     NSLog(@"支付結果--->%@",url);
     [[OpenSDK sharedInstance] ProcessOrderWithPaymentResult:url];
     [self handleOpenURL:url];
-    // ↓ 之前的解决方案——根据文档，如果WXApi尚未注册，则可能会失败。
-    // 返回 [WXApi handleOpenURL:url delegate:self];
-    NSLog(@"application----options",url.path);
     if (_isRunning) {
-        // 注册--直接处理WXApi打开的url请求
-        return [WXApi handleOpenURL:url delegate:_wxApiEventHandler];
-    }else {
-        // 未注册 -- 缓存打开 url 请求并在 WXApi 注册后处理它
+        return [WXApi handleOpenURL:url delegate:self];
+    } else {
         __weak typeof(self) weakSelf = self;
         _cachedOpenUrlRequest = ^() {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -302,38 +255,27 @@ WXAPIEventHandler *_wxApiEventHandler;
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
-    // Since flutter has minimum iOS version requirement of 11.0, we don't need to change the implementation here.
-    return [WXApi handleOpenURL:url delegate:_wxApiEventHandler];
+    return [WXApi handleOpenURL:url delegate:self];
 }
 
-//- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
-//    // ↓ 之前的解决方案——根据文档，如果WXApi尚未注册，则可能会失败。
-//    // 返回 [WXApi handleOpenURL:url delegate:self];
-//    NSLog(@"application----options",url.path);
-//    if (_isRunning) {
-//        // 注册--直接处理WXApi打开的url请求
-//        return [WXApi handleOpenURL:url delegate:self];
-//    }else {
-//        // 未注册 -- 缓存打开 url 请求并在 WXApi 注册后处理它
-//        __weak typeof(self) weakSelf = self;
-//        _cachedOpenUrlRequest = ^() {
-//          __strong typeof(weakSelf) strongSelf = weakSelf;
-//          [WXApi handleOpenURL:url delegate:strongSelf];
-//        };
-//        return NO;
-//    }
-//}
-
 - (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray * _Nonnull))restorationHandler{
-    //TODO：（如果需要）缓存 userActivity 并在 WXApi 注册后处理它
     NSLog(@"application----restorationHandler",@"111");
-    return [WXApi handleOpenUniversalLink:userActivity delegate:_wxApiEventHandler];
+    return [WXApi handleOpenUniversalLink:userActivity delegate:self];
 }
 
 - (void)scene:(UIScene *)scene continueUserActivity:(NSUserActivity *)userActivity  API_AVAILABLE(ios(13.0)){
-    
     NSLog(@"application----scene",@"111");
-    [WXApi handleOpenUniversalLink:userActivity delegate:_wxApiEventHandler];
+    [WXApi handleOpenUniversalLink:userActivity delegate:self];
+}
+
+- (void)onReq:(BaseReq *)req {
+    NSLog(@"onReq---->%@",@"OnReq調用了");
+    [wxEventHandler onReq:req];
+}
+
+- (void)onResp:(BaseResp *)resp {
+    NSLog(@"onResp--->%@",@"onResp調用了");
+    [wxEventHandler onResp:resp];
 }
 
 @end

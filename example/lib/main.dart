@@ -26,16 +26,16 @@ class _MyAppState extends State<MyApp> {
   final _mPayPlugin = MpayPlugin();
   late Dio dio;
   String payInfo =
-      """_input_charset=\"UTF-8\"&body=\"Product\"&currency=\"HKD\"&forex_biz=\"FP\"&it_b_pay=\"179m\"&notify_url=\"https://api.yedpay.com/notify/alipay-online\"&out_trade_no=\"169034360430235\"&partner=\"2088721929663896\"&payment_type=\"1\"&product_code=\"NEW_WAP_OVERSEAS_SELLER\"&return_url=\"https://api.yedpay.com/alipay-online\"&secondary_merchant_id=\"2NMJVPOMGD3YO70RL8\"&secondary_merchant_industry=\"7538\"&secondary_merchant_name=\"TTECH Global Service Limited\"&seller_id=\"2088721929663896\"&service=\"mobile.securitypay.pay\"&sign=\"bKSHYm91pFmKAD%2FCTr5K0B9%2F2dHHuykSkcVP9WJIpBlxthz5LkAwkqkRENFrKgOfd3JNSlth3KdkbZ9EB9aWpTm1zuGMJ2wwgljoi2jsUNao5y3AbkZfBQ1vgD8KT6UdHmPq%2BckZUoqNqr4MjN4bVNYAb4xXBGVw9Xh%2B%2Bch6AUjmKqXt3R8qk4NG4w9xgsDgItFxdiOeNPoBkbSc19FwwCqrEwwQ%2BEHyTTfgSk3UJ9yl3R2JL1r%2Fi2nNDOLFuXGzExOQPipr6KtKjQ1rS5oF3KAkaCIpLugNT4LfkSMS3gf0ohBOcr%2BA%2FBDFVG3u4xOHD84yUxmHMDJNuupOLyF8%2BA%3D%3D\"&sign_type=\"RSA\"&subject=\"Product\"&total_fee=\"0.20\"""";
+  """_input_charset=\"UTF-8\"&body=\"Product\"&currency=\"HKD\"&forex_biz=\"FP\"&it_b_pay=\"179m\"&notify_url=\"https://api.yedpay.com/notify/alipay-online\"&out_trade_no=\"169034360430235\"&partner=\"2088721929663896\"&payment_type=\"1\"&product_code=\"NEW_WAP_OVERSEAS_SELLER\"&return_url=\"https://api.yedpay.com/alipay-online\"&secondary_merchant_id=\"2NMJVPOMGD3YO70RL8\"&secondary_merchant_industry=\"7538\"&secondary_merchant_name=\"TTECH Global Service Limited\"&seller_id=\"2088721929663896\"&service=\"mobile.securitypay.pay\"&sign=\"bKSHYm91pFmKAD%2FCTr5K0B9%2F2dHHuykSkcVP9WJIpBlxthz5LkAwkqkRENFrKgOfd3JNSlth3KdkbZ9EB9aWpTm1zuGMJ2wwgljoi2jsUNao5y3AbkZfBQ1vgD8KT6UdHmPq%2BckZUoqNqr4MjN4bVNYAb4xXBGVw9Xh%2B%2Bch6AUjmKqXt3R8qk4NG4w9xgsDgItFxdiOeNPoBkbSc19FwwCqrEwwQ%2BEHyTTfgSk3UJ9yl3R2JL1r%2Fi2nNDOLFuXGzExOQPipr6KtKjQ1rS5oF3KAkaCIpLugNT4LfkSMS3gf0ohBOcr%2BA%2FBDFVG3u4xOHD84yUxmHMDJNuupOLyF8%2BA%3D%3D\"&sign_type=\"RSA\"&subject=\"Product\"&total_fee=\"0.20\"""";
 
   // late Function(WeChatResponse) responseListener;
 
   Future<void> registerWeChat() async {
     var aa = await _mPayPlugin.registerApi(
-      appId: "YOUR_WECHAT_APPID",
+      appId: "YOUR_APPID",
       doOnIOS: true,
       doOnAndroid: true,
-      universalLink: "YOUR_UNIVERSSL_LINK",
+      universalLink: "YOUR_UNIVERSALINK",
     );
     Logger().i(aa);
   }
@@ -49,13 +49,13 @@ class _MyAppState extends State<MyApp> {
       mPayEnv: MPayEnv.UAT,
     );
     dio = Dio();
-    dio.options.baseUrl = "YOUR_BASER_URI";
+    dio.options.baseUrl = "YOUR_BASER_URL";
     dio.options.connectTimeout = const Duration(seconds: 15);
     dio.options.receiveTimeout = const Duration(seconds: 15);
     dio.interceptors.add(LogInterceptor(responseBody: true));
     // 添加请求头
     dio.options.headers["auth-token"] =
-        "eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjEyLCJzdWIiOiJUb2tlbiIsImF1ZCI6Im9oNWQzNiIsInRlbmFudEtleSI6ImFkbWluIiwibmFtZSI6ImxqeCIsImV4cCI6MTcxMTA3MjIxMCwiZGV2aWNlIjoiYXBwIiwiaWF0IjoxNzEwOTg1ODEwfQ.ar6gl8tMEn18LXO99_uwhjJFEoZqmjIk59HtcQZ94Tc";
+    "eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjE2LCJzdWIiOiJUb2tlbiIsImF1ZCI6ImFIdUhrQiIsInRlbmFudEtleSI6ImFkbWluIiwibmFtZSI6IjE5ODA3MDU3NDRAcXEuY29tIiwiZXhwIjoxNzE2ODg5NTc5LCJkZXZpY2UiOiJhcHAiLCJpYXQiOjE3MTY4MDMxNzl9.lg0gnv-U4w7u0akVgsy5zNmVvF2NsJ-El8KssLBG0PM";
     dio.options.headers["content-type"] = "application/x-www-form-urlencoded";
     dio.interceptors.add(
       InterceptorsWrapper(
@@ -93,7 +93,7 @@ class _MyAppState extends State<MyApp> {
       "body": "测试app验签支付"
     };
     var response =
-        await dio.post("test/merchantSign", data: FormData.fromMap(datas));
+    await dio.post("test/merchantSign", data: FormData.fromMap(datas));
 
     String jsonString = json.encode(response.data["data"]["signData"]);
     Logger().i(jsonString);
@@ -170,29 +170,39 @@ class _MyAppState extends State<MyApp> {
                 ElevatedButton(
                   onPressed: () async {
                     var response = await dio.post(
-                      "/appApi/chargeByChinaums",
+                      "/appApi/payment",
                       data: {
-                        "amount": "1",
-                        "payChannel": "wechat",
-                        "currency": "HKD"
+                        "orderNo": "2024052717420001",
+                        "mechanism": "CHINAUMS",
+                        "channel": "wechat",
+                        "terminal": "APP",
+                        "wallet": "HK",
+                        "currency": "CNY"
                       },
                     );
-                    var result = json.decode(response.data["data"]["payInfo"]);
-                    try {
-                      Payment payType = Payment(
-                          appId: result["appId"],
-                          partnerId: response.data["data"]["mid"],
-                          prepayId: result["prepayid"],
-                          packageValue: result["package"],
-                          nonceStr: result["nonceStr"],
-                          timestamp: int.tryParse(result["timeStamp"]) ?? 0,
-                          sign: result["paySign"],
-                          signType: result["signType"]);
-                      Logger().i(payType);
-                      _mPayPlugin.wechatPay(payType);
-                      Logger().i(result);
-                    } catch (e) {
-                      Logger().e(e);
+                    var paymentNo = findKeyAsString(response.data, "paymentNo");
+                    var errCode = findKeyAsString(response.data, "errCode");
+                    if (errCode == "SUCCESS") {
+                      var result = json.decode(response.data["data"]["result"]["payInfo"]);
+                      Logger().d(result);
+                      if (result != null) {
+                        Payment payType = Payment(
+                            appId: findKeyAsString(result, "appid") ?? '',
+                            partnerId: findKeyAsString(result, "partnerid") ?? '',
+                            prepayId: findKeyAsString(result, "prepayid") ?? '',
+                            packageValue: findKeyAsString(result, "package") ?? '',
+                            nonceStr: findKeyAsString(result, "noncestr") ?? '',
+                            timestamp: int.tryParse(
+                                findKeyAsString(result, "timestamp") ?? '0') ??
+                                0,
+                            sign: findKeyAsString(result, "sign") ?? '');
+                        var payWechat = await _mPayPlugin.wechatPay(payType);
+
+                        Logger().d("微信支付 result回调${payWechat.toJson()}");
+                      }
+                    } else {
+
+                      Logger().d("微信支付申请异常");
                     }
                   },
                   style: ButtonStyle(
@@ -207,5 +217,25 @@ class _MyAppState extends State<MyApp> {
       ),
       builder: EasyLoading.init(),
     );
+  }
+
+  static String? findKeyAsString(Map<dynamic, dynamic> data, String key) {
+    // 检查当前层级的Map中是否包含key
+    if (data.containsKey(key)) {
+      // 确保返回值为字符串类型
+      return data[key]?.toString();
+    }
+
+    // 如果没有找到，递归检查每个嵌套的Map
+    for (var value in data.values) {
+      if (value is Map) {
+        String? result = findKeyAsString(value, key);
+        if (result != null) {
+          return result;
+        }
+      }
+    }
+    // 如果所有路径都没有找到，则返回null
+    return null;
   }
 }
