@@ -78,20 +78,4 @@ class MpayPlugin {
     return resultModel;
   }
 
-  // FluwxCancelable addSubscriber(WeChatResponseSubscriber listener) {
-  //   _responseListeners.add(listener);
-  //   return FluwxCancelableImpl(onCancel: () {
-  //     removeSubscriber(listener);
-  //   });
-  // }
-
-  /// remove your subscriber from WeChat
-  // removeSubscriber(WeChatResponseSubscriber listener) {
-  //   _responseListeners.remove(listener);
-  // }
-
-  /// remove all existing
-  // clearSubscribers() {
-  //   _responseListeners.clear();
-  // }
 }
