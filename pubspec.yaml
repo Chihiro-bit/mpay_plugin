@@ -1,7 +1,8 @@
 name: mpay_plugin
-description: My Pay
-version: 1.0.12
-homepage: https://github.com/InTheClodus/mpay_plugin.git
+description: MPay
+version: 1.0.16
+homepage: https://github.com/Chihiro-bit/mpay_plugin.git
+repository: https://github.com/Chihiro-bit/mpay_plugin.git
 
 environment:
   sdk: '>=3.0.1 <4.0.0'
