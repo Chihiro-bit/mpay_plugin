@@ -4,25 +4,27 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mpay_plugin/arguments.dart';
-// import 'package:mpay_plugin/response/wechat_response.dart';
 
 import 'mpay_plugin_platform_interface.dart';
 
 /// An implementation of [MpayPluginPlatform] that uses method channels.
 class MethodChannelMpayPlugin extends MpayPluginPlatform {
-  // final StreamController<WeChatResponse> _responseEventHandler =
-  //     StreamController.broadcast();
+  final StreamController<Map> _responseEventHandler =
+      StreamController.broadcast();
 
   @visibleForTesting
   final methodChannel = const MethodChannel('mpay_plugin');
+
+  MethodChannelMpayPlugin() {
+    methodChannel.setMethodCallHandler(_methodHandler);
+  }
 
   // MethodChannelMpayPlugin() {
   //   methodChannel.setMethodCallHandler(_methodHandler);
   // }
   //
-  // @override
-  // Stream<WeChatResponse> get responseEventHandler =>
-  //     _responseEventHandler.stream;
+  @override
+  Stream<Map> get responseEventHandler => _responseEventHandler.stream;
 
   @override
   Future<String?> getPlatformVersion() async {
@@ -31,23 +33,20 @@ class MethodChannelMpayPlugin extends MpayPluginPlatform {
     return version;
   }
 
-  // Future _methodHandler(MethodCall methodCall) {
-  //   if (methodCall.method == "wechatLog") {
-  //     _printLog(methodCall.arguments);
-  //   } else {
-  //     final response = WeChatResponse.create(
-  //       methodCall.method,
-  //       methodCall.arguments,
-  //     );
-  //     _responseEventHandler.add(response);
-  //   }
-  //
-  //   return Future.value();
-  // }
+  Future _methodHandler(MethodCall methodCall) {
+    if (methodCall.method == 'onPayResponse') {
+      _responseEventHandler
+          .add(Map<String, dynamic>.from(methodCall.arguments));
+    } else if (methodCall.method == 'wechatLog') {
+      _printLog(methodCall.arguments);
+    }
 
-  // _printLog(Map data) {
-  //   debugPrint("FluwxLog: ${data["detail"]}");
-  // }
+    return Future.value();
+  }
+
+  void _printLog(Map data) {
+    debugPrint('FluwxLog: ${data["detail"]}');
+  }
 
   @override
   Future<Map> mPay(
