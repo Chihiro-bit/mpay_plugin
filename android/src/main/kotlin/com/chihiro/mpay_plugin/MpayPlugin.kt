@@ -18,6 +18,7 @@ import com.tencent.mm.opensdk.modelmsg.LaunchFromWX
 import com.tencent.mm.opensdk.modelmsg.ShowMessageFromWX
 import com.tencent.mm.opensdk.modelpay.PayReq
 import com.tencent.mm.opensdk.modelpay.PayResp
+import com.tencent.mm.opensdk.modelbiz.WXOpenBusinessWebview
 import com.tencent.mm.opensdk.openapi.IWXAPI
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler
 import com.tencent.mm.opensdk.openapi.WXAPIFactory
@@ -30,6 +31,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import java.lang.ref.WeakReference
+import java.util.HashMap
 import java.util.concurrent.Executors
 
 /** MpayPlugin */
@@ -103,7 +105,7 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             }
 
             "wechatPayHongKongWallet" -> {
-//                payWithHongKongWallet(call, result)
+                payWithHongKongWallet(call, result)
             }
 
             else -> {
@@ -214,6 +216,22 @@ class MpayPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             wxapiEventHandler.startPayment(iwxapi!!, request, result)
         } catch (e: Exception) {
             Log.d(TAG, "payWeChat: ${e}")
+        }
+    }
+
+    private fun payWithHongKongWallet(call: MethodCall, result: Result) {
+        try {
+            val prepayId = call.argument<String>("prepayId")
+            val req = WXOpenBusinessWebview.Req()
+            req.businessType = 1
+            val info = HashMap<String, String>()
+            info["token"] = prepayId ?: ""
+            req.queryInfo = info
+            val done = iwxapi?.sendReq(req) ?: false
+            result.success(done)
+        } catch (e: Exception) {
+            Log.d(TAG, "payWithHongKongWallet: $e")
+            result.error("HKPAY_ERROR", e.message, null)
         }
     }
 

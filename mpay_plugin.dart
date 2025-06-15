@@ -1,28 +1,25 @@
+import 'dart:async';
+
 import 'package:mpay_plugin/arguments.dart';
 import 'package:mpay_plugin/response/cancelable.dart';
-import 'package:mpay_plugin/response/wechat_response.dart';
 
 import 'mpay_plugin_platform_interface.dart';
 import 'result_model.dart';
 
 class MpayPlugin {
-
-  // late final WeakReference<void Function(WeChatResponse event)> responseListener;
-  // final List<WeChatResponseSubscriber> _responseListeners = [];
+  final List<WeChatResponseSubscriber> _responseListeners = [];
+  late final StreamSubscription<Map> _subscription;
 
   Future<String?> getPlatformVersion() {
     return MpayPluginPlatform.instance.getPlatformVersion();
   }
   MpayPlugin() {
-    // responseListener = WeakReference((event) {
-    //   for (var listener in _responseListeners) {
-    //     listener(event);
-    //   }
-    // });
-    // final target = responseListener.target;
-    // if (target != null) {
-    //   MpayPluginPlatform.instance.responseEventHandler.listen(target);
-    // }
+    _subscription =
+        MpayPluginPlatform.instance.responseEventHandler.listen((event) {
+      for (var listener in _responseListeners) {
+        listener(event);
+      }
+    });
   }
 
   Future<ResultModel> mPay(
@@ -78,20 +75,25 @@ class MpayPlugin {
     return resultModel;
   }
 
-  // FluwxCancelable addSubscriber(WeChatResponseSubscriber listener) {
-  //   _responseListeners.add(listener);
-  //   return FluwxCancelableImpl(onCancel: () {
-  //     removeSubscriber(listener);
-  //   });
-  // }
+  FluwxCancelable addSubscriber(WeChatResponseSubscriber listener) {
+    _responseListeners.add(listener);
+    return FluwxCancelableImpl(onCancel: () {
+      removeSubscriber(listener);
+    });
+  }
 
   /// remove your subscriber from WeChat
-  // removeSubscriber(WeChatResponseSubscriber listener) {
-  //   _responseListeners.remove(listener);
-  // }
+  void removeSubscriber(WeChatResponseSubscriber listener) {
+    _responseListeners.remove(listener);
+  }
 
   /// remove all existing
-  // clearSubscribers() {
-  //   _responseListeners.clear();
-  // }
+  void clearSubscribers() {
+    _responseListeners.clear();
+  }
+
+  void dispose() {
+    _subscription.cancel();
+    clearSubscribers();
+  }
 }
